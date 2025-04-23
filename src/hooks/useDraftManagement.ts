@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Draft, Match } from '@/lib/types';
 import { mockDrafts, generateId } from '@/lib/mockData';
 import { STORAGE_KEYS } from '@/contexts/constants';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { useMatchManagement } from './useMatchManagement';
 
 export const useDraftManagement = () => {
@@ -18,7 +18,7 @@ export const useDraftManagement = () => {
     localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
   }, [drafts]);
 
-  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating' | 'currentRound'>) => {
+  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => {
     const randomizedSeating = [...draftData.players].sort(() => Math.random() - 0.5);
     
     const draft: Draft = {
@@ -27,7 +27,7 @@ export const useDraftManagement = () => {
       seating: randomizedSeating,
       rounds: [],
       status: 'pending',
-      currentRound: 0,
+      currentRound: draftData.currentRound || 0,
       createdAt: new Date()
     };
     

@@ -270,6 +270,7 @@ export const mockDrafts: Draft[] = [
       }
     ],
     totalRounds: 3,
+    currentRound: 3, // Add missing currentRound property
     createdAt: new Date("2024-03-10T09:30:00"),
     startedAt: new Date("2024-03-10T10:00:00"),
     completedAt: new Date("2024-03-10T13:00:00")
@@ -283,6 +284,7 @@ export const mockDrafts: Draft[] = [
     status: "pending",
     rounds: [],
     totalRounds: 3,
+    currentRound: 0, // Add missing currentRound property
     createdAt: new Date("2024-04-22T18:30:00")
   }
 ];

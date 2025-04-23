@@ -14,7 +14,7 @@ import { DraftSeating } from '@/components/DraftSeating';
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { drafts, players, matches, startDraft, completeDraft, completeRound, updateMatchResult, setCurrentDraft } = useAppContext();
+  const { drafts, players, matches, startDraft, completeRound, updateMatchResult, setCurrentDraft } = useAppContext();
   const draft = drafts.find(d => d.id === id);
   const [activeTab, setActiveTab] = useState('overview');
   const [matchScores, setMatchScores] = useState<Record<string, { player1Score: number; player2Score: number }>>({});
@@ -76,7 +76,10 @@ const DraftDetail = () => {
 
   const handleCompleteDraft = () => {
     if (draft.id) {
-      completeDraft(draft.id);
+      // Mark this as the final round and complete it
+      const finalRound = draft.currentRound || draft.rounds.length;
+      completeRound(draft.id, finalRound);
+      
       toast({
         title: "Draft completed",
         description: "The draft has been marked as completed."

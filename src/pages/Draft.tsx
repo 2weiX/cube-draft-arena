@@ -33,12 +33,14 @@ const Draft = () => {
     cubeName: string;
     players: string[];
     totalRounds: 3 | 4;
+    currentRound: number;
   }>({
     name: '',
     description: '',
     cubeName: '',
     players: [],
     totalRounds: 3,
+    currentRound: 0,
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
@@ -66,7 +68,14 @@ const Draft = () => {
     const playerCount = newDraft.players.length;
     if (newDraft.name && (playerCount === 4 || playerCount === 6 || playerCount === 8)) {
       createDraft(newDraft);
-      setNewDraft({ name: '', description: '', cubeName: '', players: [], totalRounds: 3 });
+      setNewDraft({ 
+        name: '', 
+        description: '', 
+        cubeName: '', 
+        players: [], 
+        totalRounds: 3, 
+        currentRound: 0 
+      });
       setDialogOpen(false);
     }
   };
