@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -65,16 +64,13 @@ const DraftDetail = () => {
   };
 
   const handleScoreChange = (matchId: string, player: 'player1Score' | 'player2Score', value: number) => {
-    // Ensure we have a valid non-negative integer
-    const score = Math.max(0, Math.floor(Number(value)));
-    
     setMatchScores(prev => {
       const match = prev[matchId] || { player1Score: 0, player2Score: 0 };
       return {
         ...prev,
         [matchId]: {
           ...match,
-          [player]: score
+          [player]: value
         }
       };
     });
@@ -291,13 +287,18 @@ const DraftDetail = () => {
                             <div className="text-center">
                               <p className="font-medium">{player1.name}</p>
                               {match.result === 'pending' ? (
-                                <input 
-                                  type="number" 
-                                  min="0"
-                                  value={currentScores.player1Score} 
-                                  onChange={(e) => handleScoreChange(match.id, 'player1Score', parseInt(e.target.value))}
-                                  className="w-16 border rounded p-1 text-center mt-2"
-                                />
+                                <div className="flex gap-2 justify-center mt-2">
+                                  {[2, 1, 0].map((score) => (
+                                    <Button
+                                      key={score}
+                                      variant={currentScores.player1Score === score ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => handleScoreChange(match.id, 'player1Score', score)}
+                                    >
+                                      {score}
+                                    </Button>
+                                  ))}
+                                </div>
                               ) : (
                                 <p className="text-2xl font-bold mt-2">{match.player1Score}</p>
                               )}
@@ -328,13 +329,18 @@ const DraftDetail = () => {
                             <div className="text-center">
                               <p className="font-medium">{player2.name}</p>
                               {match.result === 'pending' ? (
-                                <input 
-                                  type="number" 
-                                  min="0"
-                                  value={currentScores.player2Score} 
-                                  onChange={(e) => handleScoreChange(match.id, 'player2Score', parseInt(e.target.value))}
-                                  className="w-16 border rounded p-1 text-center mt-2"
-                                />
+                                <div className="flex gap-2 justify-center mt-2">
+                                  {[2, 1, 0].map((score) => (
+                                    <Button
+                                      key={score}
+                                      variant={currentScores.player2Score === score ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => handleScoreChange(match.id, 'player2Score', score)}
+                                    >
+                                      {score}
+                                    </Button>
+                                  ))}
+                                </div>
                               ) : (
                                 <p className="text-2xl font-bold mt-2">{match.player2Score}</p>
                               )}
@@ -345,6 +351,10 @@ const DraftDetail = () => {
                             <div className="flex justify-center mt-4">
                               <Button 
                                 onClick={() => handleSubmitResult(match)}
+                                disabled={
+                                  currentScores.player1Score === undefined || 
+                                  currentScores.player2Score === undefined
+                                }
                               >
                                 Submit Result
                               </Button>
