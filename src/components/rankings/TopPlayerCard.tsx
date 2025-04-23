@@ -32,7 +32,7 @@ export const TopPlayerCard = ({ player }: TopPlayerCardProps) => {
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-2xl font-bold mb-1">{player.name}</h2>
             <p className="text-muted-foreground mb-2">
-              {player.username ? `@${player.username}` : 'Top Ranked Player'}
+              Top Ranked Player
             </p>
             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
               <div>
