@@ -1,4 +1,3 @@
-
 import { Player, Draft, Match, MatchResult } from '@/lib/types';
 
 // Generate a random ID
@@ -9,7 +8,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p1",
     name: "Jace Beleren",
-    username: "mindsculptor",
     avatar: "https://i.imgur.com/1bwU0Mb.jpg",
     wins: 10,
     losses: 2,
@@ -20,7 +18,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p2",
     name: "Liliana Vess",
-    username: "deathmagic",
     avatar: "https://i.imgur.com/2jZhzY9.jpg",
     wins: 8,
     losses: 3,
@@ -31,7 +28,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p3",
     name: "Chandra Nalaar",
-    username: "pyromancer",
     avatar: "https://i.imgur.com/3jbSrAN.jpg",
     wins: 7,
     losses: 5,
@@ -42,7 +38,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p4",
     name: "Nissa Revane",
-    username: "worldwaker",
     avatar: "https://i.imgur.com/4qWkDAw.jpg",
     wins: 6,
     losses: 5,
@@ -53,7 +48,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p5",
     name: "Gideon Jura",
-    username: "justicar",
     avatar: "https://i.imgur.com/5pQfGNx.jpg",
     wins: 5,
     losses: 5,
@@ -64,7 +58,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p6",
     name: "Sorin Markov",
-    username: "bloodlord",
     avatar: "https://i.imgur.com/6vLqS2Y.jpg", 
     wins: 4,
     losses: 6,
@@ -75,7 +68,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p7",
     name: "Teferi",
-    username: "timemaster",
     avatar: "https://i.imgur.com/7xZrEfx.jpg",
     wins: 3,
     losses: 7,
@@ -86,7 +78,6 @@ export const mockPlayers: Player[] = [
   {
     id: "p8",
     name: "Kaya",
-    username: "ghostassassin",
     avatar: "https://i.imgur.com/8mPdLVd.jpg",
     wins: 2,
     losses: 8,
