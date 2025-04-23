@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -89,8 +90,19 @@ const DraftDetail = () => {
 
   const handleCompleteDraft = () => {
     if (draft.id) {
-      // Always mark the current round as completed first
-      completeRound(draft.id, draft.currentRound);
+      // First, ensure the current round is completed
+      const updatedDraft = completeRound(draft.id, draft.currentRound);
+      
+      // Then explicitly set the draft status to completed
+      if (updatedDraft) {
+        // The draft status should already be set to completed by completeRound
+        // if it was the last round, but we'll make sure it's completed
+        if (updatedDraft.status !== 'completed') {
+          console.log("Force completing draft:", draft.id);
+          // Call completeRound with the total rounds to ensure it's marked as completed
+          completeRound(draft.id, draft.totalRounds);
+        }
+      }
 
       toast({
         title: "Draft Ended",
