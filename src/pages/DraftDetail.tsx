@@ -7,6 +7,8 @@ import { DraftHeader } from '@/components/draft/DraftHeader';
 import { RoundContent } from '@/components/draft/RoundContent';
 import { DraftStandings } from '@/components/draft/DraftStandings';
 import { DraftSeating } from '@/components/DraftSeating';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Player } from '@/lib/types';
 
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,8 +39,19 @@ const DraftDetail = () => {
 
   const draftPlayers = players.filter(p => draft.players.includes(p.id));
 
-  const getPlayerById = (id: string) => {
-    return players.find(p => p.id === id) || { name: 'Unknown Player', id: 'unknown' };
+  const getPlayerById = (id: string): Player => {
+    const player = players.find(p => p.id === id);
+    if (player) return player;
+    return {
+      name: 'Unknown Player',
+      id: 'unknown',
+      avatar: undefined,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      ranking: 0,
+      createdAt: new Date()
+    };
   };
 
   const getDraftRecord = (playerId: string) => {
