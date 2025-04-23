@@ -34,6 +34,8 @@ export const useMatchManagement = () => {
     player1Score: number; 
     player2Score: number;
   }[]) => {
+    console.log("Updating match results:", matchResults);
+    
     const updatedMatches = matches.map(match => {
       const result = matchResults.find(r => r.id === match.id);
       if (!result) return match;
@@ -56,8 +58,13 @@ export const useMatchManagement = () => {
       };
     });
 
+    console.log("Updated matches:", updatedMatches);
     setMatches(updatedMatches);
-    return updatedMatches;
+    
+    // Return only the matches that were updated
+    return updatedMatches.filter(match => 
+      matchResults.some(result => result.id === match.id)
+    );
   };
 
   return {
@@ -67,4 +74,3 @@ export const useMatchManagement = () => {
     updateMatchesResults
   };
 };
-

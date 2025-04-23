@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,14 @@ const DraftDetail = () => {
   const handleRoundCompletion = (roundNumber: number) => {
     if (draft?.id) {
       completeRound(draft.id, roundNumber);
+      
+      // Clear the round results after submission
+      setRoundResults({});
+      
+      toast({
+        title: "Round completed",
+        description: `Round ${roundNumber} has been completed and new pairings created.`
+      });
     }
   };
 
@@ -112,6 +121,7 @@ const DraftDetail = () => {
       player2Score: roundResults[match.id]?.player2Score || 0
     }));
 
+    console.log("Submitting round results:", results);
     updateMatchesResults(results);
     handleRoundCompletion(roundNumber);
   };
@@ -152,10 +162,29 @@ const DraftDetail = () => {
   };
 
   const isRoundComplete = (roundNumber: number): boolean => {
+    // This checks if all matches in a round have non-pending results in the actual matches array
     const round = draft.rounds.find(r => r.number === roundNumber);
     if (!round) return false;
     
-    return round.matches.every(match => match.result !== 'pending');
+    // Check if all matches have either:
+    // 1. A non-pending result in the matches array
+    // 2. Scores set in the roundResults state
+    return round.matches.every(match => {
+      const matchInState = matches.find(m => m.id === match.id);
+      const hasResultInState = matchInState && matchInState.result !== 'pending';
+      const hasScoresInLocal = roundResults[match.id] !== undefined;
+      
+      return hasResultInState || hasScoresInLocal;
+    });
+  };
+
+  const canCompleteRound = (roundNumber: number): boolean => {
+    if (!draft || draft.status !== 'active') return false;
+    
+    const round = draft.rounds.find(r => r.number === roundNumber);
+    if (!round || round.completed) return false;
+    
+    return isRoundComplete(roundNumber);
   };
 
   const standings = calculateStandings();
@@ -313,8 +342,13 @@ const DraftDetail = () => {
                       {round.completed ? 'Completed' : 'In Progress'}
                     </CardDescription>
                   </div>
-                  {draft.status === 'active' && !round.completed && isRoundComplete(round.number) && (
-                    <Button onClick={() => submitRoundResults(round.number)}>
+                  
+                  {/* Explicitly show/hide the "Submit Round Results" button based on conditions */}
+                  {!round.completed && canCompleteRound(round.number) && (
+                    <Button 
+                      onClick={() => submitRoundResults(round.number)}
+                      className="bg-primary hover:bg-primary/90 text-white"
+                    >
                       Submit Round Results
                     </Button>
                   )}
@@ -328,6 +362,7 @@ const DraftDetail = () => {
                     const player1Record = getDraftRecord(match.player1);
                     const player2Record = getDraftRecord(match.player2);
                     
+                    const matchResult = matches.find(m => m.id === match.id)?.result || 'pending';
                     const currentScores = roundResults[match.id] || { 
                       player1Score: 0, 
                       player2Score: 0
@@ -344,7 +379,7 @@ const DraftDetail = () => {
                                   {player1Record.wins}-{player1Record.losses}-{player1Record.draws}
                                 </p>
                               </div>
-                              {match.result === 'pending' ? (
+                              {matchResult === 'pending' ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
                                     <Button
@@ -363,15 +398,15 @@ const DraftDetail = () => {
                             </div>
                             
                             <div className="flex flex-col items-center justify-center">
-                              {match.result === 'pending' ? (
+                              {matchResult === 'pending' ? (
                                 <p className="text-muted-foreground">vs</p>
-                              ) : match.result === 'player1Win' ? (
+                              ) : matchResult === 'player1Win' ? (
                                 <div className="flex items-center">
                                   <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
                                   <p className="text-green-500 font-medium">Winner</p>
                                   <ArrowDown className="h-4 w-4 text-red-500 ml-4 mr-1" />
                                 </div>
-                              ) : match.result === 'player2Win' ? (
+                              ) : matchResult === 'player2Win' ? (
                                 <div className="flex items-center">
                                   <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
                                   <ArrowUp className="h-4 w-4 text-green-500 ml-4 mr-1" />
@@ -391,7 +426,7 @@ const DraftDetail = () => {
                                   {player2Record.wins}-{player2Record.losses}-{player2Record.draws}
                                 </p>
                               </div>
-                              {match.result === 'pending' ? (
+                              {matchResult === 'pending' ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
                                     <Button
@@ -414,6 +449,18 @@ const DraftDetail = () => {
                     );
                   })}
                 </div>
+                
+                {/* Add an extra submit button at the bottom for better UX */}
+                {!round.completed && canCompleteRound(round.number) && (
+                  <div className="mt-4 flex justify-end">
+                    <Button 
+                      onClick={() => submitRoundResults(round.number)}
+                      className="bg-primary hover:bg-primary/90 text-white"
+                    >
+                      Submit Round Results
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
