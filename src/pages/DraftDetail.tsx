@@ -124,6 +124,11 @@ const DraftDetail = () => {
     console.log("Submitting round results:", results);
     updateMatchesResults(results);
     handleRoundCompletion(roundNumber);
+
+    // If this was the final round, switch to standings tab
+    if (roundNumber === draft.totalRounds) {
+      setActiveTab('standings');
+    }
   };
 
   const getRoundMatches = (roundNumber: number) => {
