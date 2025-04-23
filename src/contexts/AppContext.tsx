@@ -1,10 +1,10 @@
-
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useRankingsManagement } from '@/hooks/useRankingsManagement';
 import { Player, Draft, Match } from '@/lib/types';
+import { toast } from '@/components/ui/use-toast';
 
 interface AppContextType {
   // Data
@@ -73,11 +73,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       completedAt: result !== 'pending' ? new Date() : undefined
     };
     
-    // Update matches
     const updatedMatches = [...matches];
     updatedMatches[matchIndex] = updatedMatch;
     
-    // Update draft if needed
     const draft = drafts.find(d => d.id === match.draftId);
     if (draft) {
       const updatedDraft = { ...draft };
@@ -114,7 +112,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
-    // Update player rankings
     const updatedPlayers = updateRankings(players, updatedMatches);
     updatePlayer(match.player1, { 
       wins: updatedPlayers.find(p => p.id === match.player1)?.wins || 0,
