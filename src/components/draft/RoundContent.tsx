@@ -1,8 +1,9 @@
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Match, Player } from '@/lib/types';
-import { MatchCard } from './MatchCard';
+import { MatchList } from './match/MatchList';
+import { RoundHeader } from './round/RoundHeader';
 
 interface RoundContentProps {
   roundNumber: number;
@@ -33,66 +34,27 @@ export const RoundContent = ({
   const hasEnteredScores = Object.values(roundResults).length > 0;
 
   // Check if the "Submit Round Results" button should be enabled
-  // At least one match should have scores entered
   const canSubmit = !completed && (canCompleteRound || hasEnteredScores);
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Round {roundNumber} Pairings</CardTitle>
-            <CardDescription>
-              {completed ? 'Completed' : 'In Progress'}
-            </CardDescription>
-          </div>
-          
-          {canSubmit && (
-            <Button 
-              onClick={onSubmitRound}
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              Submit Round Results
-            </Button>
-          )}
-        </div>
+        <RoundHeader
+          roundNumber={roundNumber}
+          completed={completed}
+          canSubmit={canSubmit}
+          onSubmitRound={onSubmitRound}
+        />
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {matches.map(match => {
-            const player1 = getPlayerById(match.player1);
-            const player2 = getPlayerById(match.player2);
-            const player1Record = getDraftRecord(match.player1);
-            const player2Record = getDraftRecord(match.player2);
-            
-            // Default to match scores if no round results are available
-            const defaultScores = { 
-              player1Score: match.player1Score, 
-              player2Score: match.player2Score 
-            };
-            
-            // Ensure we have valid scores in the roundResults
-            const roundResult = roundResults[match.id];
-            const currentScores = roundResult ? {
-              player1Score: Number(roundResult.player1Score || 0),
-              player2Score: Number(roundResult.player2Score || 0)
-            } : defaultScores;
-            
-            return (
-              <MatchCard
-                key={match.id}
-                match={match}
-                player1={player1}
-                player2={player2}
-                player1Record={player1Record}
-                player2Record={player2Record}
-                currentScores={currentScores}
-                isEditable={isMatchEditable(match.id)}
-                onScoreChange={(player, value) => onScoreChange(match.id, player, value)}
-              />
-            );
-          })}
-        </div>
+        <MatchList
+          matches={matches}
+          getPlayerById={getPlayerById}
+          getDraftRecord={getDraftRecord}
+          roundResults={roundResults}
+          isMatchEditable={isMatchEditable}
+          onScoreChange={onScoreChange}
+        />
         
         {canSubmit && (
           <div className="mt-4 flex justify-end">
