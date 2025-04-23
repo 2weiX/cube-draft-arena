@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,8 +80,9 @@ const DraftDetail = () => {
       completeRound(draft.id, finalRound);
       
       toast({
-        title: "Draft completed",
-        description: "The draft has been marked as completed."
+        title: "Round Completed",
+        description: "The current round has been completed.",
+        variant: "default"
       });
     }
   };
@@ -224,7 +224,12 @@ const DraftDetail = () => {
               <Button onClick={handleStartDraft}>Start Draft</Button>
             )}
             {draft.status === 'active' && (
-              <Button variant="outline" onClick={handleCompleteDraft}>Complete Draft</Button>
+              <Button 
+                variant="outline" 
+                onClick={handleCompleteDraft}
+              >
+                Complete Round
+              </Button>
             )}
           </div>
         </div>
