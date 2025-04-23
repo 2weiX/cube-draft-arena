@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -26,10 +25,12 @@ const Draft = () => {
   const [newDraft, setNewDraft] = useState<{
     name: string;
     description: string;
+    cubeName: string;
     players: string[];
   }>({
     name: '',
     description: '',
+    cubeName: '',
     players: [],
   });
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -55,7 +56,7 @@ const Draft = () => {
     e.preventDefault();
     if (newDraft.name && newDraft.players.length === 8) {
       createDraft(newDraft);
-      setNewDraft({ name: '', description: '', players: [] });
+      setNewDraft({ name: '', description: '', cubeName: '', players: [] });
       setDialogOpen(false);
     }
   };
@@ -75,6 +76,12 @@ const Draft = () => {
       case 'completed':
         return <Badge variant="outline">Completed</Badge>;
     }
+  };
+
+  const getCubeCobraLink = (cubeName: string) => {
+    if (!cubeName) return null;
+    const normalizedCubeName = cubeName.trim().toLowerCase().replace(/\s+/g, '-');
+    return `https://cubecobra.com/cube/overview/${normalizedCubeName}`;
   };
 
   return (
@@ -119,6 +126,16 @@ const Draft = () => {
                     onChange={handleChange} 
                     placeholder="Draft Name" 
                     required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cubeName">Cube Name</Label>
+                  <Input 
+                    id="cubeName" 
+                    name="cubeName" 
+                    value={newDraft.cubeName} 
+                    onChange={handleChange} 
+                    placeholder="Enter CubeCobra cube name" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -195,6 +212,32 @@ const Draft = () => {
                   <CardDescription>
                     {draft.players.length} players
                     {draft.startedAt && ` • Started on ${new Date(draft.startedAt).toLocaleDateString()}`}
+                    {draft.cubeName && (
+                      <>
+                        <br />
+                        <a 
+                          href={getCubeCobraLink(draft.cubeName)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline inline-flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          View cube on CubeCobra
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 7h10v10" />
+                            <path d="M7 17 17 7" />
+                          </svg>
+                        </a>
+                      </>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

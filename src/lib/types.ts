@@ -19,6 +19,7 @@ export interface Draft {
   id: string;
   name: string;
   description?: string;
+  cubeName?: string; // Added for CubeCobra integration
   players: string[]; // Player IDs
   status: DraftStatus;
   rounds: Round[];
