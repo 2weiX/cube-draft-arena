@@ -35,7 +35,7 @@ interface AppContextType {
   currentDraft: Draft | null;
   setCurrentDraft: (draft: Draft | null) => void;
 
-  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => void;
+  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => Match[];
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -141,7 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateMatchesResults = (
     matchResults: { id: string; player1Score: number; player2Score: number; }[]
-  ) => {
+  ): Match[] => {
     console.log("AppContext: Updating match results:", matchResults);
     // First update the matches in state
     const updatedMatches = updateMatches(matchResults);

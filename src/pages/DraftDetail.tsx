@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -161,8 +162,7 @@ const DraftDetail = () => {
       return;
     }
     
-    // This is the key change - explicitly update the match results
-    // which will update player records through the context
+    // Get the array of updated matches from updateMatchesResults
     const updatedMatches = updateMatchesResults(results);
     
     if (updatedMatches && updatedMatches.length > 0) {

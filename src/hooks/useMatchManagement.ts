@@ -33,7 +33,7 @@ export const useMatchManagement = () => {
     id: string; 
     player1Score: number; 
     player2Score: number;
-  }[]) => {
+  }[]): Match[] => {
     console.log("useMatchManagement: Updating match results:", matchResults);
     
     // Return early if no match results provided
