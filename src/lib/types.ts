@@ -30,6 +30,7 @@ export interface Draft {
   status: DraftStatus;
   rounds: Round[];
   totalRounds: 3 | 4;
+  currentRound: number;
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;

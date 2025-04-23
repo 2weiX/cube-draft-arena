@@ -18,7 +18,7 @@ export const useDraftManagement = () => {
     localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
   }, [drafts]);
 
-  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => {
+  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating' | 'currentRound'>) => {
     const randomizedSeating = [...draftData.players].sort(() => Math.random() - 0.5);
     
     const draft: Draft = {
@@ -27,6 +27,7 @@ export const useDraftManagement = () => {
       seating: randomizedSeating,
       rounds: [],
       status: 'pending',
+      currentRound: 0,
       createdAt: new Date()
     };
     
@@ -47,7 +48,8 @@ export const useDraftManagement = () => {
     
     const updatedDraft = { 
       ...draft, 
-      status: 'active' as const, 
+      status: 'active' as const,
+      currentRound: 1,
       startedAt: new Date(),
       rounds: [{ number: 1, matches: initialPairings, completed: false }]
     };
@@ -65,25 +67,49 @@ export const useDraftManagement = () => {
     return updatedDraft;
   };
 
-  const completeDraft = (id: string) => {
-    const draftIndex = drafts.findIndex(d => d.id === id);
+  const completeRound = (draftId: string, roundNumber: number) => {
+    const draftIndex = drafts.findIndex(d => d.id === draftId);
     if (draftIndex === -1) return null;
-    
-    const updatedDraft = { 
-      ...drafts[draftIndex], 
-      status: 'completed' as const, 
-      completedAt: new Date() 
-    };
-    
+
+    const draft = drafts[draftIndex];
+    const updatedDraft = { ...draft };
+    const roundIndex = updatedDraft.rounds.findIndex(r => r.number === roundNumber);
+
+    if (roundIndex === -1) return null;
+
+    // Mark the round as completed
+    updatedDraft.rounds[roundIndex].completed = true;
+
+    // If there are more rounds to play, create new pairings
+    if (roundNumber < updatedDraft.totalRounds) {
+      const nextRoundNumber = roundNumber + 1;
+      const nextRoundPairings = createPairings(draftId, draft.players);
+      
+      updatedDraft.rounds.push({
+        number: nextRoundNumber,
+        matches: nextRoundPairings,
+        completed: false
+      });
+      
+      updatedDraft.currentRound = nextRoundNumber;
+      setMatches([...matches, ...nextRoundPairings]);
+    } else {
+      // If this was the last round, complete the draft
+      updatedDraft.status = 'completed';
+      updatedDraft.completedAt = new Date();
+    }
+
     const updatedDrafts = [...drafts];
     updatedDrafts[draftIndex] = updatedDraft;
-    
     setDrafts(updatedDrafts);
+
     toast({
-      title: "Draft completed",
-      description: `${updatedDraft.name} has been marked as completed.`
+      title: roundNumber < updatedDraft.totalRounds ? "Round Completed" : "Draft Completed",
+      description: roundNumber < updatedDraft.totalRounds 
+        ? `Round ${roundNumber} completed. New pairings created for round ${roundNumber + 1}.`
+        : "All rounds completed. Draft has been marked as completed."
     });
-    
+
     return updatedDraft;
   };
 
@@ -147,7 +173,7 @@ export const useDraftManagement = () => {
     setCurrentDraft,
     createDraft,
     startDraft,
-    completeDraft,
+    completeRound,
     createPairings,
     deleteDraft
   };

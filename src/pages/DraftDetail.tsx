@@ -14,7 +14,7 @@ import { DraftSeating } from '@/components/DraftSeating';
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { drafts, players, matches, startDraft, completeDraft, updateMatchResult, setCurrentDraft } = useAppContext();
+  const { drafts, players, matches, startDraft, completeDraft, completeRound, updateMatchResult, setCurrentDraft } = useAppContext();
   const draft = drafts.find(d => d.id === id);
   const [activeTab, setActiveTab] = useState('overview');
   const [matchScores, setMatchScores] = useState<Record<string, { player1Score: number; player2Score: number }>>({});
@@ -81,6 +81,12 @@ const DraftDetail = () => {
         title: "Draft completed",
         description: "The draft has been marked as completed."
       });
+    }
+  };
+
+  const handleRoundCompletion = (roundNumber: number) => {
+    if (draft?.id) {
+      completeRound(draft.id, roundNumber);
     }
   };
 
@@ -290,10 +296,19 @@ const DraftDetail = () => {
           <TabsContent key={round.number} value={`round${round.number}`} className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Round {round.number} Pairings</CardTitle>
-                <CardDescription>
-                  {round.completed ? 'Completed' : 'In Progress'}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Round {round.number} Pairings</CardTitle>
+                    <CardDescription>
+                      {round.completed ? 'Completed' : 'In Progress'}
+                    </CardDescription>
+                  </div>
+                  {!round.completed && round.matches.every(m => m.result !== 'pending') && (
+                    <Button onClick={() => handleRoundCompletion(round.number)}>
+                      Complete Round
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

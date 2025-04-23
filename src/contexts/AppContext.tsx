@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
@@ -22,6 +21,7 @@ interface AppContextType {
   createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => Draft;
   startDraft: (id: string) => Draft | null;
   completeDraft: (id: string) => Draft | null;
+  completeRound: (draftId: string, roundNumber: number) => Draft | null;
   deleteDraft: (id: string) => void;
   
   // Match functions
@@ -46,7 +46,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentDraft, 
     createDraft, 
     startDraft, 
-    completeDraft, 
+    completeDraft,
+    completeRound,
     createPairings,
     deleteDraft 
   } = useDraftManagement();
@@ -147,7 +148,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     createDraft,
     startDraft,
     completeDraft,
-    deleteDraft,
+    completeRound,
     createMatch,
     updateMatchResult,
     createPairings,
