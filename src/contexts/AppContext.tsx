@@ -21,6 +21,7 @@ interface AppContextType {
   createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => Draft;
   startDraft: (id: string) => Draft | null;
   completeDraft: (id: string) => Draft | null;
+  deleteDraft: (id: string) => void;
   
   // Match functions
   createMatch: (match: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => Match;

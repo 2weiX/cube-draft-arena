@@ -309,11 +309,11 @@ const Draft = () => {
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
-                        variant="destructive"
                         onClick={(e) => {
                           e.preventDefault();
                           deleteDraft(draft.id);
                         }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Delete
                       </AlertDialogAction>
