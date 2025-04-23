@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
@@ -141,11 +142,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateMatchesResults = (
     matchResults: { id: string; player1Score: number; player2Score: number; }[]
   ) => {
+    console.log("AppContext: Updating match results:", matchResults);
+    // First update the matches in state
     const updatedMatches = updateMatches(matchResults);
-    const updatedPlayers = updateRankings(players, updatedMatches);
     
-    // Update player stats
+    // Then update the player rankings based on the new match results
+    const updatedPlayers = updateRankings(players, matches);
+    
+    // Update player stats for affected players
     const affectedPlayers = new Set<string>();
+    
+    // Collect all players involved in the matches being updated
     matchResults.forEach(result => {
       const match = matches.find(m => m.id === result.id);
       if (match) {
@@ -154,19 +161,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
+    console.log("Affected players:", Array.from(affectedPlayers));
+    
+    // Update each affected player's record
     affectedPlayers.forEach(playerId => {
-      updatePlayer(playerId, {
-        wins: updatedPlayers.find(p => p.id === playerId)?.wins || 0,
-        losses: updatedPlayers.find(p => p.id === playerId)?.losses || 0,
-        draws: updatedPlayers.find(p => p.id === playerId)?.draws || 0,
-        ranking: updatedPlayers.find(p => p.id === playerId)?.ranking || 0
-      });
+      const updatedPlayerStats = updatedPlayers.find(p => p.id === playerId);
+      if (updatedPlayerStats) {
+        console.log(`Updating player ${playerId} stats:`, {
+          wins: updatedPlayerStats.wins,
+          losses: updatedPlayerStats.losses,
+          draws: updatedPlayerStats.draws
+        });
+        
+        updatePlayer(playerId, {
+          wins: updatedPlayerStats.wins,
+          losses: updatedPlayerStats.losses,
+          draws: updatedPlayerStats.draws,
+          ranking: updatedPlayerStats.ranking
+        });
+      }
     });
 
     toast({
       title: "Round results updated",
       description: "All match results have been recorded successfully."
     });
+    
+    return updatedMatches;
   };
 
   const value = {

@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { Match, Player } from '@/lib/types';
 
@@ -48,9 +49,9 @@ export const useRankingsManagement = () => {
   }, []);
 
   const updateRankings = useCallback((players: Player[], matches: Match[]) => {
+    console.log("Updating rankings with matches:", matches.length);
+    
     const playerStats = players.map(player => {
-      const stats = calculatePlayerStats(player.id, matches);
-      
       // Calculate lifetime stats from all matches
       const playerMatches = matches.filter(m => 
         (m.player1 === player.id || m.player2 === player.id) && 
@@ -74,6 +75,10 @@ export const useRankingsManagement = () => {
           losses++;
         }
       });
+      
+      console.log(`Player ${player.name} (${player.id}) record: ${wins}-${losses}-${draws}`);
+      
+      const stats = calculatePlayerStats(player.id, matches);
       
       return {
         ...player,

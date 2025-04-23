@@ -144,7 +144,12 @@ const DraftDetail = () => {
     }));
 
     console.log("Submitting round results:", results);
+    
+    // This is the key change - explicitly update the match results
+    // which will update player records through the context
     updateMatchesResults(results);
+    
+    // Then complete the round, which will create the next round pairings if needed
     handleRoundCompletion(roundNumber);
   };
 

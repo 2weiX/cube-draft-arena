@@ -34,21 +34,24 @@ export const useMatchManagement = () => {
     player1Score: number; 
     player2Score: number;
   }[]) => {
-    console.log("Updating match results:", matchResults);
+    console.log("useMatchManagement: Updating match results:", matchResults);
     
     const updatedMatches = matches.map(match => {
       const result = matchResults.find(r => r.id === match.id);
       if (!result) return match;
 
+      // Calculate the match result based on scores
       let matchResult: MatchResult = 'pending';
       if (result.player1Score > result.player2Score) {
         matchResult = 'player1Win';
       } else if (result.player2Score > result.player1Score) {
         matchResult = 'player2Win';
-      } else if (result.player1Score === result.player2Score && result.player1Score > 0) {
+      } else if (result.player1Score === result.player2Score && (result.player1Score > 0 || result.player2Score > 0)) {
         matchResult = 'draw';
       }
 
+      console.log(`Match ${match.id} result: ${matchResult} (${result.player1Score}-${result.player2Score})`);
+      
       return {
         ...match,
         player1Score: result.player1Score,
