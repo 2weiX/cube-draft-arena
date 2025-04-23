@@ -23,8 +23,6 @@ const App = () => (
     <ThemeProvider defaultTheme="light">
       <TooltipProvider>
         <AppProvider>
-          <Toaster />
-          <Sonner />
           <BrowserRouter>
             <div className="min-h-screen flex flex-col">
               <Navbar />
@@ -41,6 +39,8 @@ const App = () => (
               </main>
             </div>
           </BrowserRouter>
+          <Toaster />
+          <Sonner />
         </AppProvider>
       </TooltipProvider>
     </ThemeProvider>
