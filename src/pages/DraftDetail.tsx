@@ -66,11 +66,14 @@ const DraftDetail = () => {
 
   const handleStartDraft = () => {
     if (draft.id) {
-      startDraft(draft.id);
-      toast({
-        title: "Draft started",
-        description: "The pairings have been created for round 1."
-      });
+      const updatedDraft = startDraft(draft.id);
+      if (updatedDraft) {
+        setActiveTab('round1');
+        toast({
+          title: "Draft started",
+          description: "The pairings have been created for round 1."
+        });
+      }
     }
   };
 
@@ -91,7 +94,6 @@ const DraftDetail = () => {
     if (draft?.id) {
       completeRound(draft.id, roundNumber);
       
-      // Clear the round results after submission
       setRoundResults({});
       
       toast({
@@ -125,7 +127,6 @@ const DraftDetail = () => {
     updateMatchesResults(results);
     handleRoundCompletion(roundNumber);
 
-    // If this was the final round, switch to standings tab
     if (roundNumber === draft.totalRounds) {
       setActiveTab('standings');
     }
@@ -186,6 +187,11 @@ const DraftDetail = () => {
     if (!round || round.completed) return false;
     
     return isRoundComplete(roundNumber);
+  };
+
+  const isMatchEditable = (matchId: string): boolean => {
+    const match = matches.find(m => m.id === matchId);
+    return !match || match.result === 'pending';
   };
 
   const standings = calculateStandings();
@@ -369,6 +375,7 @@ const DraftDetail = () => {
                     
                     const matchFromState = matches.find(m => m.id === match.id);
                     const matchResult = matchFromState?.result || 'pending';
+                    const isEditable = isMatchEditable(match.id);
                     
                     const currentScores = roundResults[match.id] || { 
                       player1Score: matchFromState?.player1Score || 0, 
@@ -386,7 +393,7 @@ const DraftDetail = () => {
                                   {player1Record.wins}-{player1Record.losses}-{player1Record.draws}
                                 </p>
                               </div>
-                              {matchResult === 'pending' ? (
+                              {isEditable ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
                                     <Button
@@ -400,7 +407,7 @@ const DraftDetail = () => {
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-2xl font-bold mt-2">{match.player1Score}</p>
+                                <p className="text-2xl font-bold mt-2">{matchFromState?.player1Score || 0}</p>
                               )}
                             </div>
                             
@@ -433,7 +440,7 @@ const DraftDetail = () => {
                                   {player2Record.wins}-{player2Record.losses}-{player2Record.draws}
                                 </p>
                               </div>
-                              {matchResult === 'pending' ? (
+                              {isEditable ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
                                     <Button
@@ -447,7 +454,7 @@ const DraftDetail = () => {
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-2xl font-bold mt-2">{match.player2Score}</p>
+                                <p className="text-2xl font-bold mt-2">{matchFromState?.player2Score || 0}</p>
                               )}
                             </div>
                           </div>
