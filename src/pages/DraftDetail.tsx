@@ -43,6 +43,26 @@ const DraftDetail = () => {
     return players.find(p => p.id === id) || { name: 'Unknown Player', id: 'unknown' };
   };
 
+  const getDraftRecord = (playerId: string): { wins: number, losses: number, draws: number } => {
+    const draftMatches = matches.filter(m => 
+      m.draftId === draft.id && 
+      (m.player1 === playerId || m.player2 === playerId) &&
+      m.result !== 'pending'
+    );
+    
+    let wins = 0, losses = 0, draws = 0;
+    
+    draftMatches.forEach(match => {
+      if (match.result === 'player1Win' && match.player1 === playerId) wins++;
+      else if (match.result === 'player2Win' && match.player2 === playerId) wins++;
+      else if (match.result === 'player1Win' && match.player2 === playerId) losses++;
+      else if (match.result === 'player2Win' && match.player1 === playerId) losses++;
+      else if (match.result === 'draw') draws++;
+    });
+    
+    return { wins, losses, draws };
+  };
+
   const handleStartDraft = () => {
     if (draft.id) {
       startDraft(draft.id);
@@ -274,6 +294,8 @@ const DraftDetail = () => {
                   {round.matches.map(match => {
                     const player1 = getPlayerById(match.player1);
                     const player2 = getPlayerById(match.player2);
+                    const player1Record = getDraftRecord(match.player1);
+                    const player2Record = getDraftRecord(match.player2);
                     
                     const currentScores = matchScores[match.id] || { 
                       player1Score: match.player1Score, 
@@ -285,7 +307,12 @@ const DraftDetail = () => {
                         <CardContent className="pt-6">
                           <div className="grid grid-cols-3 gap-4">
                             <div className="text-center">
-                              <p className="font-medium">{player1.name}</p>
+                              <div className="mb-1">
+                                <p className="font-medium">{player1.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {player1Record.wins}-{player1Record.losses}-{player1Record.draws}
+                                </p>
+                              </div>
                               {match.result === 'pending' ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
@@ -327,7 +354,12 @@ const DraftDetail = () => {
                             </div>
                             
                             <div className="text-center">
-                              <p className="font-medium">{player2.name}</p>
+                              <div className="mb-1">
+                                <p className="font-medium">{player2.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {player2Record.wins}-{player2Record.losses}-{player2Record.draws}
+                                </p>
+                              </div>
                               {match.result === 'pending' ? (
                                 <div className="flex gap-2 justify-center mt-2">
                                   {[2, 1, 0].map((score) => (
