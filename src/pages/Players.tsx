@@ -20,10 +20,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppContext } from "@/contexts/AppContext";
-import { User, UserPlus, Trophy } from 'lucide-react';
+import { User, UserPlus, Trophy, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Players = () => {
-  const { players, addPlayer } = useAppContext();
+  const { players, addPlayer, deletePlayer } = useAppContext();
   const [newPlayer, setNewPlayer] = useState({ name: '', username: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -134,6 +145,7 @@ const Players = () => {
                 <TableHead className="text-right">Losses</TableHead>
                 <TableHead className="text-right">Draws</TableHead>
                 <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -151,6 +163,32 @@ const Players = () => {
                       <TableCell className="text-right">{player.losses}</TableCell>
                       <TableCell className="text-right">{player.draws}</TableCell>
                       <TableCell className="text-right">{winRate}%</TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Player</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {player.name}? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deletePlayer(player.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
