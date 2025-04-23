@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
@@ -46,7 +47,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     createDraft, 
     startDraft, 
     completeDraft, 
-    createPairings 
+    createPairings,
+    deleteDraft 
   } = useDraftManagement();
   const { matches, createMatch } = useMatchManagement();
   const { updateRankings } = useRankingsManagement();
@@ -145,6 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     createDraft,
     startDraft,
     completeDraft,
+    deleteDraft,
     createMatch,
     updateMatchResult,
     createPairings,
