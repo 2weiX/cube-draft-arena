@@ -1,28 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/contexts/AppContext';
-import { Grid2x2, Plus, Trash2 } from 'lucide-react';
-import { Draft as DraftType } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Grid2x2 } from 'lucide-react';
+import { CreateDraftDialog } from '@/components/drafts/CreateDraftDialog';
 
 const Draft = () => {
   const { drafts, players, createDraft, deleteDraft } = useAppContext();
@@ -114,107 +97,12 @@ const Draft = () => {
             </SelectContent>
           </Select>
           
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                <span>New Draft</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Create New Draft</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Draft Name</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    value={newDraft.name} 
-                    onChange={handleChange} 
-                    placeholder="Draft Name" 
-                    required 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cubeName">Cube Name</Label>
-                  <Input 
-                    id="cubeName" 
-                    name="cubeName" 
-                    value={newDraft.cubeName} 
-                    onChange={handleChange} 
-                    placeholder="Enter CubeCobra cube name" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
-                  <Textarea 
-                    id="description" 
-                    name="description" 
-                    value={newDraft.description} 
-                    onChange={handleChange} 
-                    placeholder="Draft Description" 
-                    rows={3}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Number of Rounds</Label>
-                  <div className="flex gap-4">
-                    <Button
-                      type="button"
-                      variant={newDraft.totalRounds === 3 ? "default" : "outline"}
-                      onClick={() => setNewDraft(prev => ({ ...prev, totalRounds: 3 }))}
-                    >
-                      3 Rounds
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={newDraft.totalRounds === 4 ? "default" : "outline"}
-                      onClick={() => setNewDraft(prev => ({ ...prev, totalRounds: 4 }))}
-                    >
-                      4 Rounds
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Select 4, 6, or 8 Players</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {players.map((player) => (
-                      <div key={player.id} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`player-${player.id}`}
-                          checked={newDraft.players.includes(player.id)}
-                          onCheckedChange={() => handlePlayerToggle(player.id)}
-                          disabled={newDraft.players.length >= 8 && !newDraft.players.includes(player.id)}
-                        />
-                        <label 
-                          htmlFor={`player-${player.id}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {player.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-2">
-                    {newDraft.players.length}/8 players selected 
-                    ({newDraft.players.length === 4 || newDraft.players.length === 6 || newDraft.players.length === 8 ? 'Valid count' : 'Select 4, 6, or 8 players'})
-                  </div>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={
-                    newDraft.name === '' || 
-                    ![4, 6, 8].includes(newDraft.players.length)
-                  }
-                >
-                  Create Draft
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <CreateDraftDialog trigger={
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <span>New Draft</span>
+            </Button>
+          } />
         </div>
       </div>
 
