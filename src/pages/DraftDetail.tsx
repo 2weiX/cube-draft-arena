@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -89,17 +88,18 @@ const DraftDetail = () => {
   };
 
   const handleCompleteDraft = () => {
-    if (draft.id && draft.status === 'active') {
-      // Only mark the draft as completed, don't submit any round results
-      completeRound(draft.id, draft.totalRounds);
-      
-      setActiveTab('standings');
-      
+    if (draft.id) {
+      // Always mark the current round as completed first
+      completeRound(draft.id, draft.currentRound);
+
       toast({
         title: "Draft Ended",
         description: "The draft has been marked as completed.",
         variant: "default"
       });
+      
+      // Switch to standings view after completion
+      setActiveTab('standings');
     }
   };
 
