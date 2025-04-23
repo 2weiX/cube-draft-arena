@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
 import { ArrowUp, ArrowDown, Trophy } from 'lucide-react';
-import { Match, Player } from '@/lib/types';
+import { Match, Player, Draft } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -141,24 +142,9 @@ const DraftDetail = () => {
     return standings.sort((a, b) => b.points - a.points);
   };
 
-  const standings = calculateStandings();
+  // Removing the problematic function createPairingsForNextRound that was causing errors
 
-  const createPairingsForNextRound = (draft: Draft, roundNumber: number) => {
-    const allMatchesCompleted = draft.rounds.every(round => round.matches.every(match => match.result !== 'pending'));
-    
-    if (allMatchesCompleted && round.number < draft.totalRounds) {
-      const nextRoundNumber = round.number + 1;
-      const nextRoundPairings = createPairingsForNextRound(updatedDraft, nextRoundNumber);
-      
-      updatedDraft.rounds.push({
-        number: nextRoundNumber,
-        matches: nextRoundPairings,
-        completed: false
-      });
-      
-      setMatches([...updatedMatches, ...nextRoundPairings]);
-    }
-  };
+  const standings = calculateStandings();
 
   return (
     <div className="container my-8 animate-fade-in">

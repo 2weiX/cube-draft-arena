@@ -268,6 +268,7 @@ export const mockDrafts: Draft[] = [
         completed: true
       }
     ],
+    totalRounds: 3, // Added this field
     createdAt: new Date("2024-03-10T09:30:00"),
     startedAt: new Date("2024-03-10T10:00:00"),
     completedAt: new Date("2024-03-10T13:00:00")
@@ -279,6 +280,7 @@ export const mockDrafts: Draft[] = [
     players: mockPlayers.slice(0, 8).map(p => p.id),
     status: "pending",
     rounds: [],
+    totalRounds: 3, // Added this field
     createdAt: new Date("2024-04-22T18:30:00")
   }
 ];
