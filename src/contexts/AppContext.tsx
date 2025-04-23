@@ -1,7 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Player, Draft, Match, MatchResult, Round, PlayerStats } from '@/lib/types';
-import { mockPlayers, mockDrafts, mockMatches, generateId } from '@/lib/mockData';
-import { toast } from '@/components/ui/use-toast';
+
+import React, { createContext, useContext } from 'react';
+import { usePlayerManagement } from '@/hooks/usePlayerManagement';
+import { useDraftManagement } from '@/hooks/useDraftManagement';
+import { useMatchManagement } from '@/hooks/useMatchManagement';
+import { useRankingsManagement } from '@/hooks/useRankingsManagement';
+import { Player, Draft, Match } from '@/lib/types';
 
 interface AppContextType {
   // Data
@@ -31,175 +34,27 @@ interface AppContextType {
   setCurrentDraft: (draft: Draft | null) => void;
 }
 
-const STORAGE_KEYS = {
-  PLAYERS: 'cube-draft-players',
-  DRAFTS: 'cube-draft-drafts',
-  MATCHES: 'cube-draft-matches',
-};
-
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const storedPlayers = localStorage.getItem(STORAGE_KEYS.PLAYERS);
-    return storedPlayers ? JSON.parse(storedPlayers) : mockPlayers;
-  });
-
-  const [drafts, setDrafts] = useState<Draft[]>(() => {
-    const storedDrafts = localStorage.getItem(STORAGE_KEYS.DRAFTS);
-    return storedDrafts ? JSON.parse(storedDrafts) : mockDrafts;
-  });
-
-  const [matches, setMatches] = useState<Match[]>(() => {
-    const storedMatches = localStorage.getItem(STORAGE_KEYS.MATCHES);
-    return storedMatches ? JSON.parse(storedMatches) : mockMatches;
-  });
-
-  const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
-  }, [players]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
-  }, [drafts]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MATCHES, JSON.stringify(matches));
-  }, [matches]);
-
-  const addPlayer = (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
-    const player: Player = {
-      id: generateId(),
-      ...newPlayer,
-      wins: 0,
-      losses: 0,
-      draws: 0,
-      ranking: players.length + 1,
-      createdAt: new Date()
-    };
-    
-    setPlayers([...players, player]);
-    toast({
-      title: "Player added",
-      description: `${player.name} has been added to the player pool.`
-    });
-    return player;
-  };
-
-  const updatePlayer = (id: string, updates: Partial<Player>) => {
-    const index = players.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    
-    const updatedPlayer = { ...players[index], ...updates };
-    const updatedPlayers = [...players];
-    updatedPlayers[index] = updatedPlayer;
-    
-    setPlayers(updatedPlayers);
-    return updatedPlayer;
-  };
-
-  const deletePlayer = (id: string) => {
-    const playerExists = players.some(p => p.id === id);
-    if (!playerExists) return false;
-    
-    setPlayers(players.filter(p => p.id !== id));
-    toast({
-      title: "Player removed",
-      description: "The player has been removed from the player pool."
-    });
-    return true;
-  };
-
-  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => {
-    const randomizedSeating = [...draftData.players].sort(() => Math.random() - 0.5);
-    
-    const draft: Draft = {
-      id: generateId(),
-      ...draftData,
-      seating: randomizedSeating,
-      rounds: [],
-      status: 'pending',
-      createdAt: new Date()
-    };
-    
-    setDrafts([...drafts, draft]);
-    toast({
-      title: "Draft created",
-      description: `${draft.name} has been created with random seating arrangements.`
-    });
-    return draft;
-  };
-
-  const startDraft = (id: string) => {
-    const draftIndex = drafts.findIndex(d => d.id === id);
-    if (draftIndex === -1) return null;
-    
-    const draft = drafts[draftIndex];
-    const initialPairings = createPairings(id, draft.players);
-    
-    const updatedDraft = { 
-      ...draft, 
-      status: 'active' as const, 
-      startedAt: new Date(),
-      rounds: [{ number: 1, matches: initialPairings, completed: false }]
-    };
-    
-    const updatedDrafts = [...drafts];
-    updatedDrafts[draftIndex] = updatedDraft;
-    
-    setDrafts(updatedDrafts);
-    setMatches([...matches, ...initialPairings]);
-    toast({
-      title: "Draft started",
-      description: `${updatedDraft.name} has started with ${initialPairings.length} initial pairings.`
-    });
-    
-    return updatedDraft;
-  };
-
-  const completeDraft = (id: string) => {
-    const draftIndex = drafts.findIndex(d => d.id === id);
-    if (draftIndex === -1) return null;
-    
-    const updatedDraft = { 
-      ...drafts[draftIndex], 
-      status: 'completed' as const, 
-      completedAt: new Date() 
-    };
-    
-    const updatedDrafts = [...drafts];
-    updatedDrafts[draftIndex] = updatedDraft;
-    
-    setDrafts(updatedDrafts);
-    toast({
-      title: "Draft completed",
-      description: `${updatedDraft.name} has been marked as completed.`
-    });
-    
-    return updatedDraft;
-  };
-
-  const createMatch = (matchData: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => {
-    const match: Match = {
-      id: generateId(),
-      ...matchData,
-      player1Score: 0,
-      player2Score: 0,
-      result: 'pending',
-      createdAt: new Date()
-    };
-    
-    setMatches([...matches, match]);
-    return match;
-  };
+  const { players, addPlayer, updatePlayer, deletePlayer } = usePlayerManagement();
+  const { 
+    drafts, 
+    currentDraft, 
+    setCurrentDraft, 
+    createDraft, 
+    startDraft, 
+    completeDraft, 
+    createPairings 
+  } = useDraftManagement();
+  const { matches, createMatch } = useMatchManagement();
+  const { updateRankings } = useRankingsManagement();
 
   const updateMatchResult = (id: string, player1Score: number, player2Score: number) => {
     const matchIndex = matches.findIndex(m => m.id === id);
     if (matchIndex === -1) return null;
     
-    let result: MatchResult = 'pending';
+    let result: Match['result'] = 'pending';
     
     if (player1Score > player2Score) {
       result = 'player1Win';
@@ -218,38 +73,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       completedAt: result !== 'pending' ? new Date() : undefined
     };
     
+    // Update matches
     const updatedMatches = [...matches];
     updatedMatches[matchIndex] = updatedMatch;
     
-    setMatches(updatedMatches);
-    
-    if (result !== 'pending') {
-      const player1 = players.find(p => p.id === match.player1);
-      const player2 = players.find(p => p.id === match.player2);
-      
-      if (player1 && player2) {
-        if (result === 'player1Win') {
-          updatePlayer(player1.id, { wins: player1.wins + 1 });
-          updatePlayer(player2.id, { losses: player2.losses + 1 });
-        } else if (result === 'player2Win') {
-          updatePlayer(player1.id, { losses: player1.losses + 1 });
-          updatePlayer(player2.id, { wins: player2.wins + 1 });
-        } else if (result === 'draw') {
-          updatePlayer(player1.id, { draws: player1.draws + 1 });
-          updatePlayer(player2.id, { draws: player2.draws + 1 });
-        }
-        
-        updateRankings();
-      }
-    }
-    
-    const draftId = match.draftId;
-    const draft = drafts.find(d => d.id === draftId);
-    
+    // Update draft if needed
+    const draft = drafts.find(d => d.id === match.draftId);
     if (draft) {
       const updatedDraft = { ...draft };
-      
       const roundIndex = updatedDraft.rounds.findIndex(r => r.number === match.round);
+      
       if (roundIndex !== -1) {
         const round = updatedDraft.rounds[roundIndex];
         const matchInRoundIndex = round.matches.findIndex(m => m.id === match.id);
@@ -257,226 +90,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (matchInRoundIndex !== -1) {
           const updatedRoundMatches = [...round.matches];
           updatedRoundMatches[matchInRoundIndex] = updatedMatch;
-          
           const allMatchesCompleted = updatedRoundMatches.every(m => m.result !== 'pending');
           
-          const updatedRound: Round = {
+          const updatedRounds = [...updatedDraft.rounds];
+          updatedRounds[roundIndex] = {
             ...round,
             matches: updatedRoundMatches,
             completed: allMatchesCompleted
           };
           
-          const updatedRounds = [...updatedDraft.rounds];
-          updatedRounds[roundIndex] = updatedRound;
           updatedDraft.rounds = updatedRounds;
           
-          if (allMatchesCompleted && round.number < 3) {
-            const nextRoundNumber = round.number + 1;
-            const nextRoundPairings = createPairingsForNextRound(updatedDraft, nextRoundNumber);
-            
-            updatedDraft.rounds.push({
-              number: nextRoundNumber,
-              matches: nextRoundPairings,
-              completed: false
-            });
-            
-            setMatches([...updatedMatches, ...nextRoundPairings]);
-          }
-          
-          const draftIndex = drafts.findIndex(d => d.id === draftId);
+          const draftIndex = drafts.findIndex(d => d.id === match.draftId);
           if (draftIndex !== -1) {
             const updatedDrafts = [...drafts];
             updatedDrafts[draftIndex] = updatedDraft;
-            setDrafts(updatedDrafts);
             
-            if (currentDraft && currentDraft.id === draftId) {
+            if (currentDraft && currentDraft.id === match.draftId) {
               setCurrentDraft(updatedDraft);
             }
           }
         }
       }
     }
-    
+
+    // Update player rankings
+    const updatedPlayers = updateRankings(players, updatedMatches);
+    updatePlayer(match.player1, { 
+      wins: updatedPlayers.find(p => p.id === match.player1)?.wins || 0,
+      losses: updatedPlayers.find(p => p.id === match.player1)?.losses || 0,
+      draws: updatedPlayers.find(p => p.id === match.player1)?.draws || 0,
+      ranking: updatedPlayers.find(p => p.id === match.player1)?.ranking || 0
+    });
+    updatePlayer(match.player2, {
+      wins: updatedPlayers.find(p => p.id === match.player2)?.wins || 0,
+      losses: updatedPlayers.find(p => p.id === match.player2)?.losses || 0,
+      draws: updatedPlayers.find(p => p.id === match.player2)?.draws || 0,
+      ranking: updatedPlayers.find(p => p.id === match.player2)?.ranking || 0
+    });
+
     toast({
       title: "Match result updated",
-      description: `The match result has been recorded successfully.`
+      description: "The match result has been recorded successfully."
     });
     
     return updatedMatch;
-  };
-
-  const createPairings = (draftId: string, playerIds: string[]) => {
-    const draft = drafts.find(d => d.id === draftId);
-    if (!draft) return [];
-    
-    const seating = draft.seating;
-    const numPlayers = seating.length;
-    const pairings: Match[] = [];
-    
-    if (numPlayers === 4) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[2]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[3]));
-    } else if (numPlayers === 6) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[3]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[4]));
-      pairings.push(createPairingForPlayers(draftId, seating[2], seating[5]));
-    } else if (numPlayers === 8) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[4]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[5]));
-      pairings.push(createPairingForPlayers(draftId, seating[2], seating[6]));
-      pairings.push(createPairingForPlayers(draftId, seating[3], seating[7]));
-    }
-    
-    return pairings;
-  };
-
-  const createPairingForPlayers = (draftId: string, player1: string, player2: string): Match => ({
-    id: generateId(),
-    round: 1,
-    draftId,
-    player1,
-    player2,
-    player1Score: 0,
-    player2Score: 0,
-    result: 'pending',
-    createdAt: new Date()
-  });
-
-  const createPairingsForNextRound = (draft: Draft, roundNumber: number) => {
-    if (roundNumber === 1) return [];
-
-    const previousMatches = draft.rounds
-      .flatMap(r => r.matches)
-      .map(m => ({ player1: m.player1, player2: m.player2 }));
-
-    const playerPoints: Record<string, number> = {};
-    draft.players.forEach(playerId => {
-      playerPoints[playerId] = 0;
-    });
-
-    draft.rounds.forEach(round => {
-      if (round.completed) {
-        round.matches.forEach(match => {
-          if (match.result === 'player1Win') {
-            playerPoints[match.player1] = (playerPoints[match.player1] || 0) + 3;
-          } else if (match.result === 'player2Win') {
-            playerPoints[match.player2] = (playerPoints[match.player2] || 0) + 3;
-          } else if (match.result === 'draw') {
-            playerPoints[match.player1] = (playerPoints[match.player1] || 0) + 1;
-            playerPoints[match.player2] = (playerPoints[match.player2] || 0) + 1;
-          }
-        });
-      }
-    });
-
-    const sortedPlayers = Object.entries(playerPoints)
-      .sort(([, pointsA], [, pointsB]) => pointsB - pointsA)
-      .map(([playerId]) => playerId);
-
-    const pairings: Match[] = [];
-    const paired = new Set<string>();
-
-    for (let i = 0; i < sortedPlayers.length; i++) {
-      const player1 = sortedPlayers[i];
-      if (paired.has(player1)) continue;
-
-      for (let j = i + 1; j < sortedPlayers.length; j++) {
-        const player2 = sortedPlayers[j];
-        if (paired.has(player2)) continue;
-
-        const havePlayed = previousMatches.some(
-          m => (m.player1 === player1 && m.player2 === player2) ||
-               (m.player1 === player2 && m.player2 === player1)
-        );
-
-        if (!havePlayed) {
-          pairings.push({
-            id: generateId(),
-            round: roundNumber,
-            draftId: draft.id,
-            player1,
-            player2,
-            player1Score: 0,
-            player2Score: 0,
-            result: 'pending',
-            createdAt: new Date()
-          });
-          paired.add(player1);
-          paired.add(player2);
-          break;
-        }
-      }
-    }
-
-    return pairings;
-  };
-
-  const calculatePlayerStats = (playerId: string, draftMatches: Match[]): PlayerStats => {
-    const playerMatches = draftMatches.filter(m => 
-      (m.player1 === playerId || m.player2 === playerId) && m.result !== 'pending'
-    );
-    
-    let matchWins = 0;
-    let matchLosses = 0;
-    let matchDraws = 0;
-    let gameWins = 0;
-    let gameLosses = 0;
-    
-    playerMatches.forEach(match => {
-      const isPlayer1 = match.player1 === playerId;
-      const playerScore = isPlayer1 ? match.player1Score : match.player2Score;
-      const opponentScore = isPlayer1 ? match.player2Score : match.player1Score;
-      
-      gameWins += playerScore;
-      gameLosses += opponentScore;
-      
-      if (match.result === 'draw') {
-        matchDraws++;
-      } else if (
-        (isPlayer1 && match.result === 'player1Win') ||
-        (!isPlayer1 && match.result === 'player2Win')
-      ) {
-        matchWins++;
-      } else {
-        matchLosses++;
-      }
-    });
-    
-    const totalMatches = matchWins + matchLosses + matchDraws;
-    const totalGames = gameWins + gameLosses;
-    
-    return {
-      matchWinPercentage: totalMatches > 0 ? (matchWins / totalMatches) * 100 : 0,
-      gameWinPercentage: totalGames > 0 ? (gameWins / totalGames) * 100 : 0,
-      points: (matchWins * 3) + matchDraws
-    };
-  };
-
-  const updateRankings = () => {
-    const playerStats = players.map(player => {
-      const stats = calculatePlayerStats(player.id, matches);
-      return {
-        player,
-        ...stats
-      };
-    });
-    
-    playerStats.sort((a, b) => {
-      if (b.points !== a.points) {
-        return b.points - a.points;
-      }
-      if (b.matchWinPercentage !== a.matchWinPercentage) {
-        return b.matchWinPercentage - a.matchWinPercentage;
-      }
-      return b.gameWinPercentage - a.gameWinPercentage;
-    });
-    
-    const updatedPlayers = playerStats.map((stats, index) => ({
-      ...stats.player,
-      ranking: index + 1
-    }));
-    
-    setPlayers(updatedPlayers);
   };
 
   const value = {
