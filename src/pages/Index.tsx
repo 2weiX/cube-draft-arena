@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppContext } from "@/contexts/AppContext";
@@ -17,7 +16,7 @@ const Index = () => {
           A Cube Draft
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Organize and track your Magic: The Gathering cube drafts with easy pairing, 
+          For a rounded cube experience. Organize and track your Magic: The Gathering cube drafts with easy pairing, 
           match tracking, and player rankings.
         </p>
       </div>
@@ -143,4 +142,3 @@ const Index = () => {
 };
 
 export default Index;
-
