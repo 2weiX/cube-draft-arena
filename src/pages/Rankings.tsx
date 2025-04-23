@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAppContext } from '@/contexts/AppContext';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,7 +11,7 @@ const Rankings = () => {
   const { players, matches } = useAppContext();
   const [sortBy, setSortBy] = useState<SortField>('ranking');
 
-  // Calculate player stats including tiebreakers
+  // Calculate player stats including lifetime records
   const playersWithStats = players.map(player => {
     const totalMatches = player.wins + player.losses + player.draws;
     const totalGames = matches
@@ -38,7 +37,8 @@ const Rankings = () => {
       matchWinPercentage,
       gameWinPercentage,
       totalMatches,
-      totalGames
+      totalGames,
+      gameWins
     };
   });
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Draft, Match } from '@/lib/types';
 import { mockDrafts, generateId } from '@/lib/mockData';
@@ -96,22 +95,25 @@ export const useDraftManagement = () => {
       
       updatedDraft.currentRound = nextRoundNumber;
       setMatches([...matches, ...nextRoundPairings]);
+      
+      toast({
+        title: "Round Completed",
+        description: `Round ${roundNumber} completed. Starting round ${nextRoundNumber}.`
+      });
     } else {
       // If this was the last round, complete the draft
       updatedDraft.status = 'completed';
       updatedDraft.completedAt = new Date();
+      
+      toast({
+        title: "Draft Completed",
+        description: "All rounds completed. Final standings are available."
+      });
     }
 
     const updatedDrafts = [...drafts];
     updatedDrafts[draftIndex] = updatedDraft;
     setDrafts(updatedDrafts);
-
-    toast({
-      title: roundNumber < updatedDraft.totalRounds ? "Round Completed" : "Draft Completed",
-      description: roundNumber < updatedDraft.totalRounds 
-        ? `Round ${roundNumber} completed. New pairings created for round ${roundNumber + 1}.`
-        : "All rounds completed. Draft has been marked as completed."
-    });
 
     return updatedDraft;
   };

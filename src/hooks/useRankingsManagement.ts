@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { Match, Player } from '@/lib/types';
 
@@ -51,12 +50,41 @@ export const useRankingsManagement = () => {
   const updateRankings = useCallback((players: Player[], matches: Match[]) => {
     const playerStats = players.map(player => {
       const stats = calculatePlayerStats(player.id, matches);
+      
+      // Calculate lifetime stats from all matches
+      const playerMatches = matches.filter(m => 
+        (m.player1 === player.id || m.player2 === player.id) && 
+        m.result !== 'pending'
+      );
+      
+      let wins = 0;
+      let losses = 0;
+      let draws = 0;
+      
+      playerMatches.forEach(match => {
+        const isPlayer1 = match.player1 === player.id;
+        if (match.result === 'draw') {
+          draws++;
+        } else if (
+          (isPlayer1 && match.result === 'player1Win') ||
+          (!isPlayer1 && match.result === 'player2Win')
+        ) {
+          wins++;
+        } else {
+          losses++;
+        }
+      });
+      
       return {
-        player,
+        ...player,
+        wins,
+        losses,
+        draws,
         ...stats
       };
     });
     
+    // Sort players by points, then match win percentage, then game win percentage
     playerStats.sort((a, b) => {
       if (b.points !== a.points) {
         return b.points - a.points;
@@ -68,7 +96,7 @@ export const useRankingsManagement = () => {
     });
     
     return playerStats.map((stats, index) => ({
-      ...stats.player,
+      ...stats,
       ranking: index + 1
     }));
   }, [calculatePlayerStats]);
