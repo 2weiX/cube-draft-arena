@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -88,9 +89,11 @@ const DraftDetail = () => {
   };
 
   const handleCompleteDraft = () => {
-    if (draft.id) {
-      const finalRound = draft.currentRound || draft.rounds.length;
-      completeRound(draft.id, finalRound);
+    if (draft.id && draft.status === 'active') {
+      // Only mark the draft as completed, don't submit any round results
+      completeRound(draft.id, draft.totalRounds);
+      
+      setActiveTab('standings');
       
       toast({
         title: "Draft Ended",
@@ -106,9 +109,16 @@ const DraftDetail = () => {
       
       setRoundResults({});
       
+      // Set the active tab to the next round or standings if it was the last round
+      if (roundNumber < draft.totalRounds) {
+        setActiveTab(`round${roundNumber + 1}`);
+      } else {
+        setActiveTab('standings');
+      }
+      
       toast({
         title: "Round completed",
-        description: `Round ${roundNumber} has been completed and new pairings created.`
+        description: `Round ${roundNumber} has been completed${roundNumber < draft.totalRounds ? ` and new pairings created for round ${roundNumber + 1}.` : '.'}`,
       });
     }
   };
@@ -136,10 +146,6 @@ const DraftDetail = () => {
     console.log("Submitting round results:", results);
     updateMatchesResults(results);
     handleRoundCompletion(roundNumber);
-
-    if (roundNumber === draft.totalRounds) {
-      setActiveTab('standings');
-    }
   };
 
   const getRoundMatches = (roundNumber: number) => {
