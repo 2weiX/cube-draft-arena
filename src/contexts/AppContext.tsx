@@ -59,21 +59,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const matchIndex = matches.findIndex(m => m.id === id);
     if (matchIndex === -1) return null;
     
+    // Ensure scores are valid numbers
+    const validPlayer1Score = Number(player1Score) || 0;
+    const validPlayer2Score = Number(player2Score) || 0;
+    
     let result: Match['result'] = 'pending';
     
-    if (player1Score > player2Score) {
+    if (validPlayer1Score > validPlayer2Score) {
       result = 'player1Win';
-    } else if (player2Score > player1Score) {
+    } else if (validPlayer2Score > validPlayer1Score) {
       result = 'player2Win';
-    } else if (player1Score === player2Score && player1Score > 0) {
+    } else if (validPlayer1Score === validPlayer2Score && validPlayer1Score > 0) {
       result = 'draw';
     }
     
     const match = matches[matchIndex];
     const updatedMatch: Match = {
       ...match,
-      player1Score,
-      player2Score,
+      player1Score: validPlayer1Score,
+      player2Score: validPlayer2Score,
       result,
       completedAt: result !== 'pending' ? new Date() : undefined
     };
@@ -117,19 +121,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    // Update player rankings based on the new match result
     const updatedPlayers = updateRankings(players, updatedMatches);
-    updatePlayer(match.player1, { 
-      wins: updatedPlayers.find(p => p.id === match.player1)?.wins || 0,
-      losses: updatedPlayers.find(p => p.id === match.player1)?.losses || 0,
-      draws: updatedPlayers.find(p => p.id === match.player1)?.draws || 0,
-      ranking: updatedPlayers.find(p => p.id === match.player1)?.ranking || 0
-    });
-    updatePlayer(match.player2, {
-      wins: updatedPlayers.find(p => p.id === match.player2)?.wins || 0,
-      losses: updatedPlayers.find(p => p.id === match.player2)?.losses || 0,
-      draws: updatedPlayers.find(p => p.id === match.player2)?.draws || 0,
-      ranking: updatedPlayers.find(p => p.id === match.player2)?.ranking || 0
-    });
+    
+    // Update each player's stats
+    if (match.player1) {
+      const player1Stats = updatedPlayers.find(p => p.id === match.player1);
+      if (player1Stats) {
+        updatePlayer(match.player1, { 
+          wins: player1Stats.wins,
+          losses: player1Stats.losses,
+          draws: player1Stats.draws,
+          ranking: player1Stats.ranking
+        });
+      }
+    }
+    
+    if (match.player2) {
+      const player2Stats = updatedPlayers.find(p => p.id === match.player2);
+      if (player2Stats) {
+        updatePlayer(match.player2, {
+          wins: player2Stats.wins,
+          losses: player2Stats.losses,
+          draws: player2Stats.draws,
+          ranking: player2Stats.ranking
+        });
+      }
+    }
 
     toast({
       title: "Match result updated",
@@ -143,8 +161,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     matchResults: { id: string; player1Score: number; player2Score: number; }[]
   ): Match[] => {
     console.log("AppContext: Updating match results:", matchResults);
+    
+    // Validate match results before processing
+    const validatedResults = matchResults.map(result => ({
+      id: result.id,
+      player1Score: Number(result.player1Score) || 0,
+      player2Score: Number(result.player2Score) || 0
+    }));
+    
+    console.log("Validated results:", validatedResults);
+    
     // First update the matches in state
-    const updatedMatches = updateMatches(matchResults);
+    const updatedMatches = updateMatches(validatedResults);
+    
+    if (!updatedMatches || updatedMatches.length === 0) {
+      console.warn("No matches were updated");
+      return [];
+    }
     
     // Then update the player rankings based on the new match results
     const updatedPlayers = updateRankings(players, matches);
@@ -153,7 +186,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const affectedPlayers = new Set<string>();
     
     // Collect all players involved in the matches being updated
-    matchResults.forEach(result => {
+    validatedResults.forEach(result => {
       const match = matches.find(m => m.id === result.id);
       if (match) {
         affectedPlayers.add(match.player1);

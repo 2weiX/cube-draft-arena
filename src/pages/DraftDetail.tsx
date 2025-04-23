@@ -145,8 +145,8 @@ const DraftDetail = () => {
       const scoreData = roundResults[match.id] || { player1Score: 0, player2Score: 0 };
       return {
         id: match.id,
-        player1Score: scoreData.player1Score,
-        player2Score: scoreData.player2Score
+        player1Score: Number(scoreData.player1Score || 0),
+        player2Score: Number(scoreData.player2Score || 0)
       };
     });
 
@@ -162,16 +162,25 @@ const DraftDetail = () => {
       return;
     }
     
-    // Get the array of updated matches from updateMatchesResults
-    const updatedMatches = updateMatchesResults(results);
-    
-    if (updatedMatches && updatedMatches.length > 0) {
-      console.log("Matches updated successfully:", updatedMatches.length);
+    try {
+      // Get the array of updated matches from updateMatchesResults
+      const updatedMatches = updateMatchesResults(results);
       
-      // Then complete the round, which will create the next round pairings if needed
-      handleRoundCompletion(roundNumber);
-    } else {
-      console.error("Failed to update matches");
+      if (updatedMatches && updatedMatches.length > 0) {
+        console.log("Matches updated successfully:", updatedMatches.length);
+        
+        // Then complete the round, which will create the next round pairings if needed
+        handleRoundCompletion(roundNumber);
+      } else {
+        console.error("No matches were updated");
+        toast({
+          title: "Warning",
+          description: "No match results were updated. Please check your scores.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error updating matches:", error);
       toast({
         title: "Error",
         description: "Failed to update match results.",

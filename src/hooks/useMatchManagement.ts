@@ -42,8 +42,17 @@ export const useMatchManagement = () => {
       return [];
     }
     
+    // Sanitize and validate input scores
+    const sanitizedResults = matchResults.map(result => ({
+      id: result.id,
+      player1Score: typeof result.player1Score === 'number' ? result.player1Score : 0,
+      player2Score: typeof result.player2Score === 'number' ? result.player2Score : 0
+    }));
+    
+    console.log("Sanitized match results:", sanitizedResults);
+    
     const updatedMatches = matches.map(match => {
-      const result = matchResults.find(r => r.id === match.id);
+      const result = sanitizedResults.find(r => r.id === match.id);
       if (!result) return match;
 
       // Calculate the match result based on scores
@@ -67,16 +76,17 @@ export const useMatchManagement = () => {
       };
     });
 
-    console.log("Updated matches:", updatedMatches.filter(m => 
-      matchResults.some(result => result.id === m.id)
-    ));
+    // Get only the matches that were updated
+    const changedMatches = updatedMatches.filter(match => 
+      sanitizedResults.some(result => result.id === match.id)
+    );
+    
+    console.log("Updated matches:", changedMatches);
     
     setMatches(updatedMatches);
     
     // Return only the matches that were updated
-    return updatedMatches.filter(match => 
-      matchResults.some(result => result.id === match.id)
-    );
+    return changedMatches;
   };
 
   return {

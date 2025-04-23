@@ -26,6 +26,10 @@ export const MatchCard = ({
   onScoreChange
 }: MatchCardProps) => {
   const matchResult = match.result;
+  
+  // Ensure we have valid scores
+  const player1Score = Number(currentScores.player1Score) || 0;
+  const player2Score = Number(currentScores.player2Score) || 0;
 
   return (
     <Card className="border shadow-sm">
@@ -43,7 +47,7 @@ export const MatchCard = ({
                 {[2, 1, 0].map((score) => (
                   <Button
                     key={score}
-                    variant={currentScores.player1Score === score ? "default" : "outline"}
+                    variant={player1Score === score ? "default" : "outline"}
                     size="sm"
                     onClick={() => onScoreChange('player1Score', score)}
                   >
@@ -52,7 +56,7 @@ export const MatchCard = ({
                 ))}
               </div>
             ) : (
-              <p className="text-2xl font-bold mt-2">{match.player1Score}</p>
+              <p className="text-2xl font-bold mt-2">{player1Score}</p>
             )}
           </div>
           
@@ -90,7 +94,7 @@ export const MatchCard = ({
                 {[2, 1, 0].map((score) => (
                   <Button
                     key={score}
-                    variant={currentScores.player2Score === score ? "default" : "outline"}
+                    variant={player2Score === score ? "default" : "outline"}
                     size="sm"
                     onClick={() => onScoreChange('player2Score', score)}
                   >
@@ -99,7 +103,7 @@ export const MatchCard = ({
                 ))}
               </div>
             ) : (
-              <p className="text-2xl font-bold mt-2">{match.player2Score}</p>
+              <p className="text-2xl font-bold mt-2">{player2Score}</p>
             )}
           </div>
         </div>

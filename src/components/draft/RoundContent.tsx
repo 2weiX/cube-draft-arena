@@ -58,10 +58,18 @@ export const RoundContent = ({
             const player1Record = getDraftRecord(match.player1);
             const player2Record = getDraftRecord(match.player2);
             
-            const currentScores = roundResults[match.id] || { 
+            // Default to match scores if no round results are available
+            const defaultScores = { 
               player1Score: match.player1Score, 
               player2Score: match.player2Score 
             };
+            
+            // Ensure we have valid scores in the roundResults
+            const roundResult = roundResults[match.id];
+            const currentScores = roundResult ? {
+              player1Score: Number(roundResult.player1Score || 0),
+              player2Score: Number(roundResult.player2Score || 0)
+            } : defaultScores;
             
             return (
               <MatchCard
