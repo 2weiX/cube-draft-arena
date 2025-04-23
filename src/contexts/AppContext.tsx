@@ -15,7 +15,7 @@ interface AppContextType {
   deletePlayer: (id: string) => boolean;
   
   // Draft functions
-  createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt'>) => Draft;
+  createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => Draft;
   startDraft: (id: string) => Draft | null;
   completeDraft: (id: string) => Draft | null;
   
@@ -84,20 +84,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Draft functions
-  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt'>) => {
+  const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => {
+    const randomizedSeating = [...draftData.players].sort(() => Math.random() - 0.5);
+    
     const draft: Draft = {
       id: generateId(),
       ...draftData,
+      seating: randomizedSeating,
       rounds: [],
       status: 'pending',
-      totalRounds: draftData.totalRounds,
       createdAt: new Date()
     };
     
     setDrafts([...drafts, draft]);
     toast({
       title: "Draft created",
-      description: `${draft.name} has been created successfully.`
+      description: `${draft.name} has been created with random seating arrangements.`
     });
     return draft;
   };
@@ -289,45 +291,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Pairing functions
   const createPairings = (draftId: string, playerIds: string[]) => {
-    // Simple random pairing for the first round
-    const shuffledPlayers = [...playerIds].sort(() => Math.random() - 0.5);
+    const draft = drafts.find(d => d.id === draftId);
+    if (!draft) return [];
     
+    // For first round, pair players based on seating positions (across from each other)
+    const seating = draft.seating;
+    const numPlayers = seating.length;
     const pairings: Match[] = [];
     
-    for (let i = 0; i < shuffledPlayers.length; i += 2) {
-      if (i + 1 < shuffledPlayers.length) {
-        pairings.push({
-          id: generateId(),
-          round: 1,
-          draftId,
-          player1: shuffledPlayers[i],
-          player2: shuffledPlayers[i + 1],
-          player1Score: 0,
-          player2Score: 0,
-          result: 'pending',
-          createdAt: new Date()
-        });
-      }
+    if (numPlayers === 4) {
+      // Pair 0 with 2, 1 with 3
+      pairings.push(createPairingForPlayers(draftId, seating[0], seating[2]));
+      pairings.push(createPairingForPlayers(draftId, seating[1], seating[3]));
+    } else if (numPlayers === 6) {
+      // Pair 0 with 3, 1 with 4, 2 with 5
+      pairings.push(createPairingForPlayers(draftId, seating[0], seating[3]));
+      pairings.push(createPairingForPlayers(draftId, seating[1], seating[4]));
+      pairings.push(createPairingForPlayers(draftId, seating[2], seating[5]));
+    } else if (numPlayers === 8) {
+      // Pair 0 with 4, 1 with 5, 2 with 6, 3 with 7
+      pairings.push(createPairingForPlayers(draftId, seating[0], seating[4]));
+      pairings.push(createPairingForPlayers(draftId, seating[1], seating[5]));
+      pairings.push(createPairingForPlayers(draftId, seating[2], seating[6]));
+      pairings.push(createPairingForPlayers(draftId, seating[3], seating[7]));
     }
     
     return pairings;
   };
-  
+
+  const createPairingForPlayers = (draftId: string, player1: string, player2: string): Match => ({
+    id: generateId(),
+    round: 1,
+    draftId,
+    player1,
+    player2,
+    player1Score: 0,
+    player2Score: 0,
+    result: 'pending',
+    createdAt: new Date()
+  });
+
   const createPairingsForNextRound = (draft: Draft, roundNumber: number) => {
-    // Get the results from the previous round
-    const previousRound = draft.rounds.find(r => r.number === roundNumber - 1);
-    
-    if (!previousRound) {
-      return [];
-    }
-    
-    // Calculate points for each player based on previous rounds
+    if (roundNumber === 1) return [];
+
+    // Get all previous matches to check for previous pairings
+    const previousMatches = draft.rounds
+      .flatMap(r => r.matches)
+      .map(m => ({ player1: m.player1, player2: m.player2 }));
+
+    // Calculate points for each player
     const playerPoints: Record<string, number> = {};
     draft.players.forEach(playerId => {
       playerPoints[playerId] = 0;
     });
-    
-    // For all completed rounds, calculate points
+
+    // Calculate points from all completed rounds
     draft.rounds.forEach(round => {
       if (round.completed) {
         round.matches.forEach(match => {
@@ -342,34 +360,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
       }
     });
-    
+
     // Sort players by points
     const sortedPlayers = Object.entries(playerPoints)
       .sort(([, pointsA], [, pointsB]) => pointsB - pointsA)
       .map(([playerId]) => playerId);
-    
-    // Create pairings based on Swiss system (players with similar points play each other)
+
     const pairings: Match[] = [];
-    
-    for (let i = 0; i < sortedPlayers.length; i += 2) {
-      if (i + 1 < sortedPlayers.length) {
-        pairings.push({
-          id: generateId(),
-          round: roundNumber,
-          draftId: draft.id,
-          player1: sortedPlayers[i],
-          player2: sortedPlayers[i + 1],
-          player1Score: 0,
-          player2Score: 0,
-          result: 'pending',
-          createdAt: new Date()
-        });
+    const paired = new Set<string>();
+
+    // Try to pair players with similar points who haven't played each other
+    for (let i = 0; i < sortedPlayers.length; i++) {
+      const player1 = sortedPlayers[i];
+      if (paired.has(player1)) continue;
+
+      // Find the next unpaired player who hasn't played against player1
+      for (let j = i + 1; j < sortedPlayers.length; j++) {
+        const player2 = sortedPlayers[j];
+        if (paired.has(player2)) continue;
+
+        // Check if these players have already played against each other
+        const havePlayed = previousMatches.some(
+          m => (m.player1 === player1 && m.player2 === player2) ||
+               (m.player1 === player2 && m.player2 === player1)
+        );
+
+        if (!havePlayed) {
+          pairings.push({
+            id: generateId(),
+            round: roundNumber,
+            draftId: draft.id,
+            player1,
+            player2,
+            player1Score: 0,
+            player2Score: 0,
+            result: 'pending',
+            createdAt: new Date()
+          });
+          paired.add(player1);
+          paired.add(player2);
+          break;
+        }
       }
     }
-    
+
     return pairings;
   };
-  
+
   const updateRankings = () => {
     // Calculate points for each player
     const playerPoints = players.map(player => ({

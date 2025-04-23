@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Match, Player, Draft } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { DraftSeating } from '@/components/DraftSeating';
 
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -142,8 +142,6 @@ const DraftDetail = () => {
     return standings.sort((a, b) => b.points - a.points);
   };
 
-  // Removing the problematic function createPairingsForNextRound that was causing errors
-
   const standings = calculateStandings();
 
   return (
@@ -190,6 +188,7 @@ const DraftDetail = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="seating">Seating</TabsTrigger>
           {draft.rounds.map((round) => (
             <TabsTrigger key={round.number} value={`round${round.number}`}>
               Round {round.number}
@@ -281,6 +280,10 @@ const DraftDetail = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="seating">
+          <DraftSeating draftId={draft.id} />
         </TabsContent>
 
         {draft.rounds.map((round) => (

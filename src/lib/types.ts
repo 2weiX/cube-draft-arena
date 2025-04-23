@@ -21,9 +21,10 @@ export interface Draft {
   description?: string;
   cubeName?: string;
   players: string[]; // Player IDs
+  seating: string[]; // Player IDs in seating order
   status: DraftStatus;
   rounds: Round[];
-  totalRounds: 3 | 4; // New field for number of rounds
+  totalRounds: 3 | 4;
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;

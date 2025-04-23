@@ -103,6 +103,7 @@ export const mockDrafts: Draft[] = [
     name: "Ravnica Cube Draft",
     description: "Classic Ravnica block cube featuring all 10 guilds",
     players: mockPlayers.map(p => p.id),
+    seating: mockPlayers.map(p => p.id), // Added seating
     status: "completed",
     rounds: [
       {
@@ -268,7 +269,7 @@ export const mockDrafts: Draft[] = [
         completed: true
       }
     ],
-    totalRounds: 3, // Added this field
+    totalRounds: 3,
     createdAt: new Date("2024-03-10T09:30:00"),
     startedAt: new Date("2024-03-10T10:00:00"),
     completedAt: new Date("2024-03-10T13:00:00")
@@ -278,9 +279,10 @@ export const mockDrafts: Draft[] = [
     name: "Innistrad Horror Cube",
     description: "Spooky cube featuring the best of Innistrad's horror themes",
     players: mockPlayers.slice(0, 8).map(p => p.id),
+    seating: mockPlayers.slice(0, 8).map(p => p.id), // Added seating
     status: "pending",
     rounds: [],
-    totalRounds: 3, // Added this field
+    totalRounds: 3,
     createdAt: new Date("2024-04-22T18:30:00")
   }
 ];
