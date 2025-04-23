@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext } from 'react';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
-import { Draft } from '@/lib/types';
+import { Draft, Match } from '@/lib/types';
 
 interface DraftContextType {
   drafts: Draft[];

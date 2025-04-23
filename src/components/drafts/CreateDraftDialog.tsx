@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppContext } from "@/contexts/AppContext";
+import { usePlayerContext, useDraftContext } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 
@@ -15,7 +15,8 @@ interface CreateDraftDialogProps {
 
 export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
   const navigate = useNavigate();
-  const { players, createDraft } = useAppContext();
+  const { players } = usePlayerContext();
+  const { createDraft } = useDraftContext();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [cubeName, setCubeName] = useState("");
   const [rounds, setRounds] = useState<3 | 4>(3);

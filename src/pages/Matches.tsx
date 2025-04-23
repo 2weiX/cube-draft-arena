@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAppContext } from '@/contexts/AppContext';
+import { usePlayerContext, useDraftContext, useMatchContext } from '@/contexts/AppContext';
 import { Match, Player } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { 

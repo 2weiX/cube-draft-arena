@@ -6,7 +6,7 @@ import { Grid2x2, Trophy, Users } from "lucide-react";
 import { CreateDraftDialog } from "@/components/drafts/CreateDraftDialog";
 
 const Index = () => {
-  const { drafts, players } = useDraftContext();
+  const { drafts } = useDraftContext();
   const { players } = usePlayerContext();
   const currentDraft = drafts.find(draft => draft.status === 'active');
   

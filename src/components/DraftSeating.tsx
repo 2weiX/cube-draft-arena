@@ -1,5 +1,5 @@
 
-import { useAppContext } from '@/contexts/AppContext';
+import { usePlayerContext, useDraftContext } from '@/contexts/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface DraftSeatingProps {
@@ -7,7 +7,8 @@ interface DraftSeatingProps {
 }
 
 export const DraftSeating = ({ draftId }: DraftSeatingProps) => {
-  const { drafts, players } = useAppContext();
+  const { drafts } = useDraftContext();
+  const { players } = usePlayerContext();
   const draft = drafts.find(d => d.id === draftId);
   
   if (!draft) return null;

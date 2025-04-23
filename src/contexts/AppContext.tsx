@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { PlayerProvider } from './PlayerContext';
-import { DraftProvider } from './DraftContext';
-import { MatchProvider } from './MatchContext';
+import { PlayerProvider, usePlayerContext } from './PlayerContext';
+import { DraftProvider, useDraftContext } from './DraftContext';
+import { MatchProvider, useMatchContext } from './MatchContext';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -17,6 +17,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 };
 
 // Re-export all context hooks for convenience
-export { usePlayerContext } from './PlayerContext';
-export { useDraftContext } from './DraftContext';
-export { useMatchContext } from './MatchContext';
+export { usePlayerContext, useDraftContext, useMatchContext };
+
+// Create a combined hook for backwards compatibility
+export const useAppContext = () => {
+  const playerContext = usePlayerContext();
+  const draftContext = useDraftContext();
+  const matchContext = useMatchContext();
+
+  return {
+    ...playerContext,
+    ...draftContext,
+    ...matchContext
+  };
+};
