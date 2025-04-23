@@ -76,7 +76,6 @@ const DraftDetail = () => {
 
   const handleCompleteDraft = () => {
     if (draft.id) {
-      // Mark this as the final round and complete it
       const finalRound = draft.currentRound || draft.rounds.length;
       completeRound(draft.id, finalRound);
       
@@ -149,6 +148,13 @@ const DraftDetail = () => {
     });
     
     return standings.sort((a, b) => b.points - a.points);
+  };
+
+  const isRoundComplete = (roundNumber: number): boolean => {
+    const round = draft.rounds.find(r => r.number === roundNumber);
+    if (!round) return false;
+    
+    return round.matches.every(match => match.result !== 'pending');
   };
 
   const standings = calculateStandings();
@@ -306,7 +312,7 @@ const DraftDetail = () => {
                       {round.completed ? 'Completed' : 'In Progress'}
                     </CardDescription>
                   </div>
-                  {!round.completed && round.matches.every(m => m.result !== 'pending') && (
+                  {draft.status === 'active' && !round.completed && isRoundComplete(round.number) && (
                     <Button onClick={() => handleRoundCompletion(round.number)}>
                       Complete Round
                     </Button>
@@ -427,6 +433,14 @@ const DraftDetail = () => {
                     );
                   })}
                 </div>
+                
+                {draft.status === 'active' && !round.completed && isRoundComplete(round.number) && (
+                  <div className="flex justify-center mt-6">
+                    <Button onClick={() => handleRoundCompletion(round.number)}>
+                      Complete Round
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

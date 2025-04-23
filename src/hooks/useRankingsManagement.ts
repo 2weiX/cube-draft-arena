@@ -109,6 +109,8 @@ export const useRankingsManagement = () => {
       return statsB.gameWinPercentage - statsA.gameWinPercentage;
     });
     
+    console.log('Sorted players by performance:', availablePlayers);
+    
     // Create pairings
     while (availablePlayers.length > 0) {
       const player1 = availablePlayers.shift()!;
@@ -129,6 +131,7 @@ export const useRankingsManagement = () => {
       }
       
       const player2 = availablePlayers.splice(bestOpponentIndex, 1)[0];
+      console.log(`Creating pairing between ${player1} and ${player2}`);
       pairings.push({ player1, player2 });
     }
     
