@@ -1,4 +1,3 @@
-
 // Player types
 export interface Player {
   id: string;
@@ -14,6 +13,12 @@ export interface Player {
 
 // Draft types
 export type DraftStatus = "pending" | "active" | "completed";
+
+export interface PlayerStats {
+  matchWinPercentage: number;
+  gameWinPercentage: number;
+  points: number;
+}
 
 export interface Draft {
   id: string;

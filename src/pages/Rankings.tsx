@@ -17,17 +17,36 @@ import {
 type SortField = 'ranking' | 'wins' | 'losses' | 'winRate';
 
 const Rankings = () => {
-  const { players } = useAppContext();
+  const { players, matches } = useAppContext();
   const [sortBy, setSortBy] = useState<SortField>('ranking');
 
-  // Calculate win rates and sort players
+  // Calculate player stats including tiebreakers
   const playersWithStats = players.map(player => {
     const totalMatches = player.wins + player.losses + player.draws;
-    const winRate = totalMatches > 0 ? (player.wins / totalMatches) * 100 : 0;
+    const totalGames = matches
+      .filter(m => (m.player1 === player.id || m.player2 === player.id) && m.result !== 'pending')
+      .reduce((total, match) => {
+        const playerScore = match.player1 === player.id ? match.player1Score : match.player2Score;
+        const opponentScore = match.player1 === player.id ? match.player2Score : match.player1Score;
+        return total + playerScore + opponentScore;
+      }, 0);
+    
+    const gameWins = matches
+      .filter(m => (m.player1 === player.id || m.player2 === player.id) && m.result !== 'pending')
+      .reduce((wins, match) => {
+        const playerScore = match.player1 === player.id ? match.player1Score : match.player2Score;
+        return wins + playerScore;
+      }, 0);
+    
+    const matchWinPercentage = totalMatches > 0 ? (player.wins / totalMatches) * 100 : 0;
+    const gameWinPercentage = totalGames > 0 ? (gameWins / totalGames) * 100 : 0;
+    
     return {
       ...player,
-      winRate,
-      totalMatches
+      matchWinPercentage,
+      gameWinPercentage,
+      totalMatches,
+      totalGames
     };
   });
 
@@ -153,11 +172,13 @@ const Rankings = () => {
       <Card>
         <CardHeader>
           <CardTitle>Global Rankings</CardTitle>
-          <CardDescription>Players ranked by {
-            sortBy === 'ranking' ? 'overall performance' :
-            sortBy === 'wins' ? 'total wins' :
-            sortBy === 'losses' ? 'least losses' : 'win rate'
-          }</CardDescription>
+          <CardDescription>
+            Players ranked by {
+              sortBy === 'ranking' ? 'overall performance' :
+              sortBy === 'wins' ? 'total wins' :
+              sortBy === 'losses' ? 'least losses' : 'win rate'
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -165,15 +186,14 @@ const Rankings = () => {
               <TableRow>
                 <TableHead className="w-12">Rank</TableHead>
                 <TableHead>Player</TableHead>
-                <TableHead className="text-right">Wins</TableHead>
-                <TableHead className="text-right">Losses</TableHead>
-                <TableHead className="text-right">Draws</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="text-right">Matches</TableHead>
+                <TableHead className="text-right">Match Win %</TableHead>
+                <TableHead className="text-right">Game Win %</TableHead>
+                <TableHead className="text-right">Points</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedPlayers.map((player, index) => (
+              {playersWithStats.map((player, index) => (
                 <TableRow key={player.id}>
                   <TableCell className="font-medium">
                     {index === 0 ? (
@@ -194,11 +214,18 @@ const Rankings = () => {
                       <span>{player.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right text-green-600 font-medium">{player.wins}</TableCell>
-                  <TableCell className="text-right text-red-600">{player.losses}</TableCell>
-                  <TableCell className="text-right">{player.draws}</TableCell>
-                  <TableCell className="text-right">{player.totalMatches}</TableCell>
-                  <TableCell className="text-right font-medium">{player.winRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-right">
+                    {player.wins}-{player.losses}-{player.draws}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {player.matchWinPercentage.toFixed(1)}%
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {player.gameWinPercentage.toFixed(1)}%
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {player.wins * 3 + player.draws}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
