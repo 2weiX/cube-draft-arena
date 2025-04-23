@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { usePlayerContext } from '@/contexts/AppContext';
 import {
   Table,
   TableBody,
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppContext } from "@/contexts/AppContext";
 import { User, UserPlus, Trophy, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -34,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Players = () => {
-  const { players, addPlayer, deletePlayer } = useAppContext();
+  const { players, addPlayer, deletePlayer } = usePlayerContext();
   const [newPlayer, setNewPlayer] = useState({ name: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
 

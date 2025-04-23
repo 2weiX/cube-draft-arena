@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,9 @@ import {
 } from '@/components/ui/select';
 
 const Matches = () => {
-  const { matches, players, drafts } = useAppContext();
+  const { matches } = useMatchContext();
+  const { players } = usePlayerContext();
+  const { drafts } = useDraftContext();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   // Get player by ID

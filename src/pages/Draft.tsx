@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/contexts/AppContext';
+import { useDraftContext } from '@/contexts/AppContext';
 import { Plus } from 'lucide-react';
 import { CreateDraftDialog } from '@/components/drafts/CreateDraftDialog';
 import { DraftFilter } from '@/components/drafts/DraftFilter';
@@ -9,7 +8,7 @@ import { EmptyDraftState } from '@/components/drafts/EmptyDraftState';
 import { DraftCard } from '@/components/drafts/DraftCard';
 
 const Draft = () => {
-  const { drafts, createDraft, deleteDraft } = useAppContext();
+  const { drafts, createDraft, deleteDraft } = useDraftContext();
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
 

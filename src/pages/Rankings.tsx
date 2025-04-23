@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppContext } from '@/contexts/AppContext';
+import { usePlayerContext, useMatchContext } from '@/contexts/AppContext';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TopPlayerCard } from '@/components/rankings/TopPlayerCard';
 import { StatsCards } from '@/components/rankings/StatsCards';
@@ -8,7 +8,8 @@ import { RankingsTable } from '@/components/rankings/RankingsTable';
 type SortField = 'ranking' | 'wins' | 'losses' | 'winRate';
 
 const Rankings = () => {
-  const { players, matches } = useAppContext();
+  const { players } = usePlayerContext();
+  const { matches } = useMatchContext();
   const [sortBy, setSortBy] = useState<SortField>('ranking');
 
   // Calculate player stats including lifetime records

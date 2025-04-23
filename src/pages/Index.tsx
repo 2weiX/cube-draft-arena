@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAppContext } from "@/contexts/AppContext";
+import { usePlayerContext, useDraftContext } from '@/contexts/AppContext';
 import { Link } from "react-router-dom";
 import { Grid2x2, Trophy, Users } from "lucide-react";
 import { CreateDraftDialog } from "@/components/drafts/CreateDraftDialog";
 
 const Index = () => {
-  const { drafts, players } = useAppContext();
+  const { drafts, players } = useDraftContext();
+  const { players } = usePlayerContext();
   const currentDraft = drafts.find(draft => draft.status === 'active');
   
   return (

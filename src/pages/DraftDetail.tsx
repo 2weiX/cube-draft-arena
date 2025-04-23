@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAppContext } from '@/contexts/AppContext';
+import { useDraftContext, usePlayerContext, useMatchContext } from '@/contexts/AppContext';
 import { toast } from '@/components/ui/use-toast';
 import { DraftHeader } from '@/components/draft/DraftHeader';
 import { RoundContent } from '@/components/draft/RoundContent';
@@ -13,7 +13,9 @@ import { Player } from '@/lib/types';
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { drafts, players, matches, startDraft, completeRound, updateMatchesResults, setCurrentDraft } = useAppContext();
+  const { drafts, startDraft, completeRound, setCurrentDraft } = useDraftContext();
+  const { players } = usePlayerContext();
+  const { matches, updateMatchesResults } = useMatchContext();
   const draft = drafts.find(d => d.id === id);
   const [activeTab, setActiveTab] = useState('overview');
   const [roundResults, setRoundResults] = useState<Record<string, { player1Score: number; player2Score: number }>>({});
