@@ -362,10 +362,12 @@ const DraftDetail = () => {
                     const player1Record = getDraftRecord(match.player1);
                     const player2Record = getDraftRecord(match.player2);
                     
-                    const matchResult = matches.find(m => m.id === match.id)?.result || 'pending';
+                    const matchFromState = matches.find(m => m.id === match.id);
+                    const matchResult = matchFromState?.result || 'pending';
+                    
                     const currentScores = roundResults[match.id] || { 
-                      player1Score: 0, 
-                      player2Score: 0
+                      player1Score: matchFromState?.player1Score || 0, 
+                      player2Score: matchFromState?.player2Score || 0
                     };
                     
                     return (
