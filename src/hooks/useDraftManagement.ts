@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { Draft, Match } from '@/lib/types';
 import { mockDrafts, generateId } from '@/lib/mockData';
 import { STORAGE_KEYS } from '@/contexts/constants';
 import { toast } from '@/components/ui/use-toast';
 import { useMatchManagement } from './useMatchManagement';
+import { useRankingsManagement } from './useRankingsManagement';
 
 export const useDraftManagement = () => {
   const [drafts, setDrafts] = useState<Draft[]>(() => {
@@ -13,6 +15,7 @@ export const useDraftManagement = () => {
 
   const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
   const { createMatch, matches, setMatches } = useMatchManagement();
+  const { generatePairings } = useRankingsManagement();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
@@ -83,7 +86,7 @@ export const useDraftManagement = () => {
     // If there are more rounds to play, create new pairings
     if (roundNumber < updatedDraft.totalRounds) {
       const nextRoundNumber = roundNumber + 1;
-      const nextRoundPairings = createPairings(draftId, draft.players);
+      const nextRoundPairings = createPairings(draftId, draft.players, nextRoundNumber);
       
       updatedDraft.rounds.push({
         number: nextRoundNumber,
@@ -113,34 +116,42 @@ export const useDraftManagement = () => {
     return updatedDraft;
   };
 
-  const createPairings = (draftId: string, playerIds: string[]) => {
+  const createPairings = (draftId: string, playerIds: string[], roundNumber: number = 1) => {
     const draft = drafts.find(d => d.id === draftId);
     if (!draft) return [];
     
-    const seating = draft.seating;
-    const numPlayers = seating.length;
-    const pairings: Match[] = [];
-    
-    if (numPlayers === 4) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[2]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[3]));
-    } else if (numPlayers === 6) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[3]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[4]));
-      pairings.push(createPairingForPlayers(draftId, seating[2], seating[5]));
-    } else if (numPlayers === 8) {
-      pairings.push(createPairingForPlayers(draftId, seating[0], seating[4]));
-      pairings.push(createPairingForPlayers(draftId, seating[1], seating[5]));
-      pairings.push(createPairingForPlayers(draftId, seating[2], seating[6]));
-      pairings.push(createPairingForPlayers(draftId, seating[3], seating[7]));
+    // Use the improved pairing algorithm from useRankingsManagement
+    if (roundNumber > 1) {
+      // For rounds after the first, use the standings-based pairings
+      const pairings = generatePairings(draftId, playerIds, matches, roundNumber);
+      return pairings.map(pair => createPairingForPlayers(draftId, pair.player1, pair.player2, roundNumber));
+    } else {
+      // For the first round, use the original random seating logic
+      const seating = draft.seating;
+      const numPlayers = seating.length;
+      const pairings: Match[] = [];
+      
+      if (numPlayers === 4) {
+        pairings.push(createPairingForPlayers(draftId, seating[0], seating[2], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[1], seating[3], roundNumber));
+      } else if (numPlayers === 6) {
+        pairings.push(createPairingForPlayers(draftId, seating[0], seating[3], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[1], seating[4], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[2], seating[5], roundNumber));
+      } else if (numPlayers === 8) {
+        pairings.push(createPairingForPlayers(draftId, seating[0], seating[4], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[1], seating[5], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[2], seating[6], roundNumber));
+        pairings.push(createPairingForPlayers(draftId, seating[3], seating[7], roundNumber));
+      }
+      
+      return pairings;
     }
-    
-    return pairings;
   };
 
-  const createPairingForPlayers = (draftId: string, player1: string, player2: string): Match => ({
+  const createPairingForPlayers = (draftId: string, player1: string, player2: string, round: number = 1): Match => ({
     id: generateId(),
-    round: 1,
+    round,
     draftId,
     player1,
     player2,

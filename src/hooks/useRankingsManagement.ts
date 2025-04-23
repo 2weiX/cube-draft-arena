@@ -73,8 +73,72 @@ export const useRankingsManagement = () => {
     }));
   }, [calculatePlayerStats]);
 
+  /**
+   * Determines if two players have already played against each other
+   */
+  const havePlayedAgainst = useCallback((player1Id: string, player2Id: string, matches: Match[]): boolean => {
+    return matches.some(match => 
+      (match.player1 === player1Id && match.player2 === player2Id) ||
+      (match.player1 === player2Id && match.player2 === player1Id)
+    );
+  }, []);
+  
+  /**
+   * Creates optimal pairings based on standings with restrictions
+   */
+  const generatePairings = useCallback((draftId: string, playerIds: string[], matches: Match[], currentRound: number): {
+    player1: string;
+    player2: string;
+  }[] => {
+    // Clone the array to avoid modifying the original
+    const availablePlayers = [...playerIds];
+    const draftMatches = matches.filter(m => m.draftId === draftId);
+    const pairings: { player1: string; player2: string }[] = [];
+    
+    // Sort players by their performance in this draft
+    availablePlayers.sort((a, b) => {
+      const statsA = calculatePlayerStats(a, draftMatches);
+      const statsB = calculatePlayerStats(b, draftMatches);
+      
+      if (statsB.points !== statsA.points) {
+        return statsB.points - statsA.points;
+      }
+      if (statsB.matchWinPercentage !== statsA.matchWinPercentage) {
+        return statsB.matchWinPercentage - statsA.matchWinPercentage;
+      }
+      return statsB.gameWinPercentage - statsA.gameWinPercentage;
+    });
+    
+    // Create pairings
+    while (availablePlayers.length > 0) {
+      const player1 = availablePlayers.shift()!;
+      let bestOpponentIndex = -1;
+      
+      // Find the highest-ranked player who hasn't played against player1 yet
+      for (let i = 0; i < availablePlayers.length; i++) {
+        if (!havePlayedAgainst(player1, availablePlayers[i], draftMatches)) {
+          bestOpponentIndex = i;
+          break;
+        }
+      }
+      
+      // If all available players have played against player1, pick the highest-ranked one
+      if (bestOpponentIndex === -1) {
+        bestOpponentIndex = 0;
+        console.log(`Warning: Player ${player1} has already played against all remaining players. Pairing with highest ranked available player.`);
+      }
+      
+      const player2 = availablePlayers.splice(bestOpponentIndex, 1)[0];
+      pairings.push({ player1, player2 });
+    }
+    
+    return pairings;
+  }, [calculatePlayerStats, havePlayedAgainst]);
+
   return {
     calculatePlayerStats,
-    updateRankings
+    updateRankings,
+    havePlayedAgainst,
+    generatePairings
   };
 };

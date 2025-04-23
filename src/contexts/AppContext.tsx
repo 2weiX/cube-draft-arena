@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
@@ -28,7 +29,7 @@ interface AppContextType {
   updateMatchResult: (id: string, player1Score: number, player2Score: number) => Match | null;
 
   // Pairing functions
-  createPairings: (draftId: string, players: string[]) => Match[];
+  createPairings: (draftId: string, players: string[], roundNumber?: number) => Match[];
   
   // Current draft
   currentDraft: Draft | null;
@@ -96,7 +97,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updatedRounds[roundIndex] = {
             ...round,
             matches: updatedRoundMatches,
-            completed: allMatchesCompleted
+            completed: round.completed
           };
           
           updatedDraft.rounds = updatedRounds;
