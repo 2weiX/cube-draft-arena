@@ -16,6 +16,20 @@ export const usePlayerManagement = () => {
   }, [players]);
 
   const addPlayer = (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
+    // Check if player name already exists (case insensitive)
+    const playerExists = players.some(
+      p => p.name.toLowerCase() === newPlayer.name.toLowerCase()
+    );
+
+    if (playerExists) {
+      toast({
+        title: "Error",
+        description: "A player with this name already exists.",
+        variant: "destructive"
+      });
+      return null;
+    }
+
     const player: Player = {
       id: generateId(),
       ...newPlayer,

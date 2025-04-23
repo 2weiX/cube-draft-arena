@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Table,
@@ -35,7 +34,7 @@ import {
 
 const Players = () => {
   const { players, addPlayer, deletePlayer } = useAppContext();
-  const [newPlayer, setNewPlayer] = useState({ name: '', username: '' });
+  const [newPlayer, setNewPlayer] = useState({ name: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,9 +45,11 @@ const Players = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPlayer.name) {
-      addPlayer(newPlayer);
-      setNewPlayer({ name: '', username: '' });
-      setDialogOpen(false);
+      const result = addPlayer(newPlayer);
+      if (result) {
+        setNewPlayer({ name: '' });
+        setDialogOpen(false);
+      }
     }
   };
 
@@ -80,16 +81,6 @@ const Players = () => {
                   onChange={handleChange} 
                   placeholder="Player Name" 
                   required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username (Optional)</Label>
-                <Input 
-                  id="username" 
-                  name="username" 
-                  value={newPlayer.username} 
-                  onChange={handleChange} 
-                  placeholder="Username" 
                 />
               </div>
               <Button type="submit" className="w-full">Add Player</Button>

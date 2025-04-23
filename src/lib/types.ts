@@ -1,9 +1,7 @@
-
 // Player types
 export interface Player {
   id: string;
   name: string;
-  username?: string;
   avatar?: string;
   wins: number;
   losses: number;
