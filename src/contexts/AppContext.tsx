@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { useDraftManagement } from '@/hooks/useDraftManagement';
@@ -34,6 +33,8 @@ interface AppContextType {
   // Current draft
   currentDraft: Draft | null;
   setCurrentDraft: (draft: Draft | null) => void;
+
+  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -50,7 +51,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     createPairings,
     deleteDraft 
   } = useDraftManagement();
-  const { matches, createMatch } = useMatchManagement();
+  const { matches, createMatch, updateMatchesResults: updateMatches } = useMatchManagement();
   const { updateRankings } = useRankingsManagement();
 
   const updateMatchResult = (id: string, player1Score: number, player2Score: number) => {
@@ -137,6 +138,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updatedMatch;
   };
 
+  const updateMatchesResults = (
+    matchResults: { id: string; player1Score: number; player2Score: number; }[]
+  ) => {
+    const updatedMatches = updateMatches(matchResults);
+    const updatedPlayers = updateRankings(players, updatedMatches);
+    
+    // Update player stats
+    const affectedPlayers = new Set<string>();
+    matchResults.forEach(result => {
+      const match = matches.find(m => m.id === result.id);
+      if (match) {
+        affectedPlayers.add(match.player1);
+        affectedPlayers.add(match.player2);
+      }
+    });
+
+    affectedPlayers.forEach(playerId => {
+      updatePlayer(playerId, {
+        wins: updatedPlayers.find(p => p.id === playerId)?.wins || 0,
+        losses: updatedPlayers.find(p => p.id === playerId)?.losses || 0,
+        draws: updatedPlayers.find(p => p.id === playerId)?.draws || 0,
+        ranking: updatedPlayers.find(p => p.id === playerId)?.ranking || 0
+      });
+    });
+
+    toast({
+      title: "Round results updated",
+      description: "All match results have been recorded successfully."
+    });
+  };
+
   const value = {
     players,
     drafts,
@@ -152,7 +184,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     createPairings,
     currentDraft,
     setCurrentDraft,
-    deleteDraft
+    deleteDraft,
+    updateMatchesResults,
   };
   
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

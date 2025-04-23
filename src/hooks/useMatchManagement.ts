@@ -29,9 +29,42 @@ export const useMatchManagement = () => {
     return match;
   };
 
+  const updateMatchesResults = (matchResults: { 
+    id: string; 
+    player1Score: number; 
+    player2Score: number;
+  }[]) => {
+    const updatedMatches = matches.map(match => {
+      const result = matchResults.find(r => r.id === match.id);
+      if (!result) return match;
+
+      let matchResult: MatchResult = 'pending';
+      if (result.player1Score > result.player2Score) {
+        matchResult = 'player1Win';
+      } else if (result.player2Score > result.player1Score) {
+        matchResult = 'player2Win';
+      } else if (result.player1Score === result.player2Score && result.player1Score > 0) {
+        matchResult = 'draw';
+      }
+
+      return {
+        ...match,
+        player1Score: result.player1Score,
+        player2Score: result.player2Score,
+        result: matchResult,
+        completedAt: matchResult !== 'pending' ? new Date() : undefined
+      };
+    });
+
+    setMatches(updatedMatches);
+    return updatedMatches;
+  };
+
   return {
     matches,
     setMatches,
-    createMatch
+    createMatch,
+    updateMatchesResults
   };
 };
+

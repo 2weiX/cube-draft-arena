@@ -14,10 +14,10 @@ import { DraftSeating } from '@/components/DraftSeating';
 const DraftDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { drafts, players, matches, startDraft, completeRound, updateMatchResult, setCurrentDraft } = useAppContext();
+  const { drafts, players, matches, startDraft, completeRound, updateMatchesResults, setCurrentDraft } = useAppContext();
   const draft = drafts.find(d => d.id === id);
   const [activeTab, setActiveTab] = useState('overview');
-  const [matchScores, setMatchScores] = useState<Record<string, { player1Score: number; player2Score: number }>>({});
+  const [roundResults, setRoundResults] = useState<Record<string, { player1Score: number; player2Score: number }>>({});
 
   useEffect(() => {
     if (draft) {
@@ -93,26 +93,27 @@ const DraftDetail = () => {
   };
 
   const handleScoreChange = (matchId: string, player: 'player1Score' | 'player2Score', value: number) => {
-    setMatchScores(prev => {
-      const match = prev[matchId] || { player1Score: 0, player2Score: 0 };
-      return {
-        ...prev,
-        [matchId]: {
-          ...match,
-          [player]: value
-        }
-      };
-    });
+    setRoundResults(prev => ({
+      ...prev,
+      [matchId]: {
+        ...prev[matchId],
+        [player]: value
+      }
+    }));
   };
 
-  const handleSubmitResult = (match: Match) => {
-    const scores = matchScores[match.id] || { player1Score: match.player1Score, player2Score: match.player2Score };
-    updateMatchResult(match.id, scores.player1Score, scores.player2Score);
-    
-    toast({
-      title: "Match result updated",
-      description: "The match result has been recorded."
-    });
+  const submitRoundResults = (roundNumber: number) => {
+    const round = draft?.rounds.find(r => r.number === roundNumber);
+    if (!round) return;
+
+    const results = round.matches.map(match => ({
+      id: match.id,
+      player1Score: roundResults[match.id]?.player1Score || 0,
+      player2Score: roundResults[match.id]?.player2Score || 0
+    }));
+
+    updateMatchesResults(results);
+    handleRoundCompletion(roundNumber);
   };
 
   const getRoundMatches = (roundNumber: number) => {
@@ -313,8 +314,8 @@ const DraftDetail = () => {
                     </CardDescription>
                   </div>
                   {draft.status === 'active' && !round.completed && isRoundComplete(round.number) && (
-                    <Button onClick={() => handleRoundCompletion(round.number)}>
-                      Complete Round
+                    <Button onClick={() => submitRoundResults(round.number)}>
+                      Submit Round Results
                     </Button>
                   )}
                 </div>
@@ -327,9 +328,9 @@ const DraftDetail = () => {
                     const player1Record = getDraftRecord(match.player1);
                     const player2Record = getDraftRecord(match.player2);
                     
-                    const currentScores = matchScores[match.id] || { 
-                      player1Score: match.player1Score, 
-                      player2Score: match.player2Score 
+                    const currentScores = roundResults[match.id] || { 
+                      player1Score: 0, 
+                      player2Score: 0
                     };
                     
                     return (
@@ -408,39 +409,11 @@ const DraftDetail = () => {
                               )}
                             </div>
                           </div>
-                          
-                          {match.result === 'pending' && (
-                            <div className="flex justify-center mt-4">
-                              <Button 
-                                onClick={() => handleSubmitResult(match)}
-                                disabled={
-                                  currentScores.player1Score === undefined || 
-                                  currentScores.player2Score === undefined
-                                }
-                              >
-                                Submit Result
-                              </Button>
-                            </div>
-                          )}
-                          
-                          {match.completedAt && (
-                            <p className="text-xs text-center text-muted-foreground mt-4">
-                              Completed on {new Date(match.completedAt).toLocaleDateString()} at {new Date(match.completedAt).toLocaleTimeString()}
-                            </p>
-                          )}
                         </CardContent>
                       </Card>
                     );
                   })}
                 </div>
-                
-                {draft.status === 'active' && !round.completed && isRoundComplete(round.number) && (
-                  <div className="flex justify-center mt-6">
-                    <Button onClick={() => handleRoundCompletion(round.number)}>
-                      Complete Round
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

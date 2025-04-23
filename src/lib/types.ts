@@ -1,4 +1,3 @@
-
 // Player types
 export interface Player {
   id: string;
@@ -57,4 +56,34 @@ export interface Match {
   result: MatchResult;
   createdAt: Date;
   completedAt?: Date;
+}
+
+// Update AppContextType to include the new function
+export interface AppContextType {
+  players: Player[];
+  drafts: Draft[];
+  matches: Match[];
+  
+  // Player functions
+  addPlayer: (player: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => Player;
+  updatePlayer: (id: string, updates: Partial<Player>) => Player | null;
+  deletePlayer: (id: string) => boolean;
+  
+  // Draft functions
+  createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => Draft;
+  startDraft: (id: string) => Draft | null;
+  completeRound: (draftId: string, roundNumber: number) => Draft | null;
+  deleteDraft: (id: string) => void;
+  
+  // Match functions
+  createMatch: (match: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => Match;
+  updateMatchResult: (id: string, player1Score: number, player2Score: number) => Match | null;
+
+  // Pairing functions
+  createPairings: (draftId: string, players: string[], roundNumber?: number) => Match[];
+  
+  // Current draft
+  currentDraft: Draft | null;
+  setCurrentDraft: (draft: Draft | null) => void;
+  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => void;
 }
