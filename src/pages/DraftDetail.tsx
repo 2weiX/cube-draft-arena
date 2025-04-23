@@ -143,6 +143,23 @@ const DraftDetail = () => {
 
   const standings = calculateStandings();
 
+  const createPairingsForNextRound = (draft: Draft, roundNumber: number) => {
+    const allMatchesCompleted = draft.rounds.every(round => round.matches.every(match => match.result !== 'pending'));
+    
+    if (allMatchesCompleted && round.number < draft.totalRounds) {
+      const nextRoundNumber = round.number + 1;
+      const nextRoundPairings = createPairingsForNextRound(updatedDraft, nextRoundNumber);
+      
+      updatedDraft.rounds.push({
+        number: nextRoundNumber,
+        matches: nextRoundPairings,
+        completed: false
+      });
+      
+      setMatches([...updatedMatches, ...nextRoundPairings]);
+    }
+  };
+
   return (
     <div className="container my-8 animate-fade-in">
       <div className="mb-6">
@@ -216,7 +233,7 @@ const DraftDetail = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 bg-muted rounded-md">
                     <p className="text-sm text-muted-foreground">Rounds</p>
-                    <p className="text-xl font-bold">{draft.rounds.length}/3</p>
+                    <p className="text-xl font-bold">{draft.rounds.length}/{draft.totalRounds}</p>
                   </div>
                   <div className="p-4 bg-muted rounded-md">
                     <p className="text-sm text-muted-foreground">Players</p>

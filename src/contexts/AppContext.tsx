@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { Player, Draft, Match, MatchResult, Round } from '@/lib/types';
 import { mockPlayers, mockDrafts, mockMatches, generateId } from '@/lib/mockData';
@@ -91,6 +90,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...draftData,
       rounds: [],
       status: 'pending',
+      totalRounds: draftData.totalRounds,
       createdAt: new Date()
     };
     

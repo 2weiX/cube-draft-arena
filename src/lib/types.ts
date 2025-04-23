@@ -19,10 +19,11 @@ export interface Draft {
   id: string;
   name: string;
   description?: string;
-  cubeName?: string; // Added for CubeCobra integration
+  cubeName?: string;
   players: string[]; // Player IDs
   status: DraftStatus;
   rounds: Round[];
+  totalRounds: 3 | 4; // New field for number of rounds
   createdAt: Date;
   startedAt?: Date;
   completedAt?: Date;

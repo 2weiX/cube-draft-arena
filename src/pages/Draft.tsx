@@ -27,11 +27,13 @@ const Draft = () => {
     description: string;
     cubeName: string;
     players: string[];
+    totalRounds: 3 | 4;
   }>({
     name: '',
     description: '',
     cubeName: '',
     players: [],
+    totalRounds: 3,
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
@@ -47,6 +49,8 @@ const Draft = () => {
       if (exists) {
         return { ...prev, players: prev.players.filter(id => id !== playerId) };
       } else {
+        const currentCount = prev.players.length;
+        if (currentCount >= 8 && !exists) return prev; // Maximum 8 players
         return { ...prev, players: [...prev.players, playerId] };
       }
     });
@@ -54,9 +58,10 @@ const Draft = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newDraft.name && newDraft.players.length === 8) {
+    const playerCount = newDraft.players.length;
+    if (newDraft.name && (playerCount === 4 || playerCount === 6 || playerCount === 8)) {
       createDraft(newDraft);
-      setNewDraft({ name: '', description: '', cubeName: '', players: [] });
+      setNewDraft({ name: '', description: '', cubeName: '', players: [], totalRounds: 3 });
       setDialogOpen(false);
     }
   };
@@ -150,7 +155,26 @@ const Draft = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Select 8 Players</Label>
+                  <Label>Number of Rounds</Label>
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant={newDraft.totalRounds === 3 ? "default" : "outline"}
+                      onClick={() => setNewDraft(prev => ({ ...prev, totalRounds: 3 }))}
+                    >
+                      3 Rounds
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={newDraft.totalRounds === 4 ? "default" : "outline"}
+                      onClick={() => setNewDraft(prev => ({ ...prev, totalRounds: 4 }))}
+                    >
+                      4 Rounds
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Select 4, 6, or 8 Players</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {players.map((player) => (
                       <div key={player.id} className="flex items-center space-x-2">
@@ -170,13 +194,17 @@ const Draft = () => {
                     ))}
                   </div>
                   <div className="text-xs text-muted-foreground mt-2">
-                    {newDraft.players.length}/8 players selected
+                    {newDraft.players.length}/8 players selected 
+                    ({newDraft.players.length === 4 || newDraft.players.length === 6 || newDraft.players.length === 8 ? 'Valid count' : 'Select 4, 6, or 8 players'})
                   </div>
                 </div>
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={newDraft.name === '' || newDraft.players.length !== 8}
+                  disabled={
+                    newDraft.name === '' || 
+                    ![4, 6, 8].includes(newDraft.players.length)
+                  }
                 >
                   Create Draft
                 </Button>
