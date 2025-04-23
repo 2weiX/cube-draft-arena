@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -135,22 +134,50 @@ const DraftDetail = () => {
 
   const submitRoundResults = (roundNumber: number) => {
     const round = draft?.rounds.find(r => r.number === roundNumber);
-    if (!round) return;
+    if (!round) {
+      console.error("Cannot find round", roundNumber, "in draft", draft?.id);
+      return;
+    }
 
-    const results = round.matches.map(match => ({
-      id: match.id,
-      player1Score: roundResults[match.id]?.player1Score || 0,
-      player2Score: roundResults[match.id]?.player2Score || 0
-    }));
+    const results = round.matches.map(match => {
+      // Make sure we have results for every match
+      const scoreData = roundResults[match.id] || { player1Score: 0, player2Score: 0 };
+      return {
+        id: match.id,
+        player1Score: scoreData.player1Score,
+        player2Score: scoreData.player2Score
+      };
+    });
 
     console.log("Submitting round results:", results);
     
+    if (results.length === 0) {
+      console.warn("No results to submit for round", roundNumber);
+      toast({
+        title: "No results to submit",
+        description: "Please enter scores for all matches.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // This is the key change - explicitly update the match results
     // which will update player records through the context
-    updateMatchesResults(results);
+    const updatedMatches = updateMatchesResults(results);
     
-    // Then complete the round, which will create the next round pairings if needed
-    handleRoundCompletion(roundNumber);
+    if (updatedMatches && updatedMatches.length > 0) {
+      console.log("Matches updated successfully:", updatedMatches.length);
+      
+      // Then complete the round, which will create the next round pairings if needed
+      handleRoundCompletion(roundNumber);
+    } else {
+      console.error("Failed to update matches");
+      toast({
+        title: "Error",
+        description: "Failed to update match results.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getRoundMatches = (roundNumber: number) => {

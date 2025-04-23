@@ -36,6 +36,12 @@ export const useMatchManagement = () => {
   }[]) => {
     console.log("useMatchManagement: Updating match results:", matchResults);
     
+    // Return early if no match results provided
+    if (!matchResults.length) {
+      console.warn("No match results provided to update");
+      return [];
+    }
+    
     const updatedMatches = matches.map(match => {
       const result = matchResults.find(r => r.id === match.id);
       if (!result) return match;
@@ -50,7 +56,7 @@ export const useMatchManagement = () => {
         matchResult = 'draw';
       }
 
-      console.log(`Match ${match.id} result: ${matchResult} (${result.player1Score}-${result.player2Score})`);
+      console.log(`Match ${match.id} result: ${matchResult} (${result.player1Score}-${result.player2Score}) between players ${match.player1} and ${match.player2}`);
       
       return {
         ...match,
@@ -61,7 +67,10 @@ export const useMatchManagement = () => {
       };
     });
 
-    console.log("Updated matches:", updatedMatches);
+    console.log("Updated matches:", updatedMatches.filter(m => 
+      matchResults.some(result => result.id === m.id)
+    ));
+    
     setMatches(updatedMatches);
     
     // Return only the matches that were updated

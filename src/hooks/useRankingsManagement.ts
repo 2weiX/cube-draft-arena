@@ -51,11 +51,19 @@ export const useRankingsManagement = () => {
   const updateRankings = useCallback((players: Player[], matches: Match[]) => {
     console.log("Updating rankings with matches:", matches.length);
     
+    if (!matches.length) {
+      console.warn("No matches provided for ranking calculation");
+      return players.map(p => ({ ...p }));
+    }
+    
+    // Filter only completed matches
+    const completedMatches = matches.filter(m => m.result !== 'pending');
+    console.log("Completed matches for rankings:", completedMatches.length);
+    
     const playerStats = players.map(player => {
       // Calculate lifetime stats from all matches
-      const playerMatches = matches.filter(m => 
-        (m.player1 === player.id || m.player2 === player.id) && 
-        m.result !== 'pending'
+      const playerMatches = completedMatches.filter(m => 
+        (m.player1 === player.id || m.player2 === player.id)
       );
       
       let wins = 0;
