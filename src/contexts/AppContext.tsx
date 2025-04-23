@@ -20,7 +20,6 @@ interface AppContextType {
   // Draft functions
   createDraft: (draft: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => Draft;
   startDraft: (id: string) => Draft | null;
-  completeDraft: (id: string) => Draft | null;
   completeRound: (draftId: string, roundNumber: number) => Draft | null;
   deleteDraft: (id: string) => void;
   
@@ -46,7 +45,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentDraft, 
     createDraft, 
     startDraft, 
-    completeDraft,
     completeRound,
     createPairings,
     deleteDraft 
@@ -147,13 +145,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     deletePlayer,
     createDraft,
     startDraft,
-    completeDraft,
     completeRound,
     createMatch,
     updateMatchResult,
     createPairings,
     currentDraft,
-    setCurrentDraft
+    setCurrentDraft,
+    deleteDraft
   };
   
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

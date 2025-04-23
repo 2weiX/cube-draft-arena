@@ -1,11 +1,29 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/contexts/AppContext';
-import { Grid2x2 } from 'lucide-react';
+import { Grid2x2, Plus, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Draft as DraftType } from '@/lib/types';
 import { CreateDraftDialog } from '@/components/drafts/CreateDraftDialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
+import { 
+  Dialog,
+  DialogTrigger
+} from '@/components/ui/dialog';
 
 const Draft = () => {
   const { drafts, players, createDraft, deleteDraft } = useAppContext();
@@ -114,9 +132,11 @@ const Draft = () => {
             </div>
             <h3 className="text-xl font-medium mb-2">No Drafts Found</h3>
             <p className="text-muted-foreground mb-4">Create your first draft to get started</p>
-            <DialogTrigger asChild>
-              <Button onClick={() => setDialogOpen(true)}>Create Draft</Button>
-            </DialogTrigger>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button onClick={() => setDialogOpen(true)}>Create Draft</Button>
+              </DialogTrigger>
+            </Dialog>
           </CardContent>
         </Card>
       ) : (

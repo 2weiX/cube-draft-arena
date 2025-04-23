@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppContext } from "@/contexts/AppContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 
 interface CreateDraftDialogProps {
@@ -42,7 +42,8 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
         description: `${rounds} round draft`,
         cubeName,
         players: selectedPlayers,
-        totalRounds: rounds
+        totalRounds: rounds,
+        currentRound: 0
       });
       
       setSelectedPlayers([]);
@@ -69,7 +70,9 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      {trigger || defaultTrigger}
+      <DialogTrigger asChild>
+        {trigger || defaultTrigger}
+      </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Create New Draft</DialogTitle>
