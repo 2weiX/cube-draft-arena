@@ -3,22 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppContext } from "@/contexts/AppContext";
 import { Link } from "react-router-dom";
-import { Trophy, Users, Grid2x2 } from "lucide-react";
+import { Plus, Grid2x2, Trophy, Users } from "lucide-react";
 
 const Index = () => {
   const { drafts, players } = useAppContext();
-  const activeOrPendingDrafts = drafts.filter(draft => draft.status !== 'completed');
-  const completedDrafts = drafts.filter(draft => draft.status === 'completed');
-
+  const currentDraft = drafts.find(draft => draft.status === 'active');
+  
   return (
     <div className="container my-8 animate-fade-in">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-mtg-purple to-mtg-darkblue">
           A Cube Draft
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          {/* Description removed as per user request */}
-        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -44,25 +40,6 @@ const Index = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Drafts</CardTitle>
-              <CardDescription>Manage Drafts</CardDescription>
-            </div>
-            <Grid2x2 className="h-8 w-8 text-mtg-blue" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold">{drafts.length}</p>
-            <p className="text-muted-foreground">total drafts</p>
-          </CardContent>
-          <CardFooter>
-            <Link to="/draft" className="w-full">
-              <Button className="w-full">View Drafts</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
               <CardTitle>Rankings</CardTitle>
               <CardDescription>Player Rankings</CardDescription>
             </div>
@@ -78,65 +55,56 @@ const Index = () => {
             </Link>
           </CardFooter>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Drafts</CardTitle>
+              <CardDescription>All Drafts</CardDescription>
+            </div>
+            <Grid2x2 className="h-8 w-8 text-mtg-blue" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-4xl font-bold">{drafts.length}</p>
+            <p className="text-muted-foreground">total drafts</p>
+          </CardContent>
+          <CardFooter>
+            <Link to="/draft" className="w-full">
+              <Button className="w-full">View All Drafts</Button>
+            </Link>
+          </CardFooter>
+        </Card>
       </div>
 
-      {activeOrPendingDrafts.length > 0 && (
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Active Drafts</h2>
-            <Link to="/draft">
-              <Button variant="outline">View All</Button>
+      <div className="mt-12">
+        {currentDraft ? (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold mb-4">Current Draft</h2>
+            <Link to={`/draft/${currentDraft.id}`}>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle>{currentDraft.name}</CardTitle>
+                  <CardDescription>In Progress</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{currentDraft.players.length} players</p>
+                  {currentDraft.description && <p className="mt-2">{currentDraft.description}</p>}
+                </CardContent>
+              </Card>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {activeOrPendingDrafts.map(draft => (
-              <Link to={`/draft/${draft.id}`} key={draft.id}>
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle>{draft.name}</CardTitle>
-                    <CardDescription>
-                      {draft.status === 'active' ? 'In Progress' : 'Pending'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{draft.players.length} players</p>
-                    {draft.description && <p className="mt-2">{draft.description}</p>}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {completedDrafts.length > 0 && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Recent Completed Drafts</h2>
+        ) : (
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold">No Active Draft</h2>
             <Link to="/draft">
-              <Button variant="outline">View All</Button>
+              <Button size="lg" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Start New Draft
+              </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {completedDrafts.slice(0, 2).map(draft => (
-              <Link to={`/draft/${draft.id}`} key={draft.id}>
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle>{draft.name}</CardTitle>
-                    <CardDescription>Completed</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      {draft.completedAt && new Date(draft.completedAt).toLocaleDateString()}
-                    </p>
-                    {draft.description && <p className="mt-2">{draft.description}</p>}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
