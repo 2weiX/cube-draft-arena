@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppContext } from "@/contexts/AppContext";
@@ -14,7 +15,6 @@ const Index = () => {
   const [cubeName, setCubeName] = useState("");
   const [rounds, setRounds] = useState<3 | 4>(3);
   const currentDraft = drafts.find(draft => draft.status === 'active');
-  const completedDrafts = drafts.filter(draft => draft.status === 'completed');
   
   const togglePlayer = (playerId: string) => {
     setSelectedPlayers(current => {
@@ -190,28 +190,6 @@ const Index = () => {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
-        )}
-
-        {completedDrafts.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4">Past Drafts</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {completedDrafts.map(draft => (
-                <Link key={draft.id} to={`/draft/${draft.id}`}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle>{draft.name}</CardTitle>
-                      <CardDescription>Completed</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">{draft.players.length} players</p>
-                      {draft.description && <p className="mt-2">{draft.description}</p>}
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
           </div>
         )}
       </div>
