@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -90,16 +91,18 @@ const DraftDetail = () => {
   };
 
   const handleCompleteDraft = () => {
-    if (draft.id) {
-      const updatedDraft = completeRound(draft.id, draft.currentRound);
-      
-      if (updatedDraft) {
-        if (updatedDraft.status !== 'completed') {
-          console.log("Force completing draft:", draft.id);
-          completeRound(draft.id, draft.totalRounds);
+    if (draft.id && draft.status !== 'completed') {
+      // If the draft is not at the last round, force complete all rounds up to the total
+      if (draft.currentRound < draft.totalRounds) {
+        // Complete all remaining rounds
+        for (let i = draft.currentRound; i <= draft.totalRounds; i++) {
+          completeRound(draft.id, i);
         }
+      } else {
+        // Just complete the final round if we're already there
+        completeRound(draft.id, draft.currentRound);
       }
-
+      
       toast({
         title: "Draft Ended",
         description: "The draft has been marked as completed.",
@@ -107,6 +110,12 @@ const DraftDetail = () => {
       });
       
       setActiveTab('standings');
+    } else if (draft?.status === 'completed') {
+      toast({
+        title: "Draft Already Completed",
+        description: "This draft is already marked as completed.",
+        variant: "default"
+      });
     }
   };
 
