@@ -44,8 +44,8 @@ const DraftDetail = () => {
     const player = players.find(p => p.id === id);
     if (player) return player;
     return {
-      name: 'Unknown Player',
       id: 'unknown',
+      name: 'Unknown Player',
       avatar: undefined,
       wins: 0,
       losses: 0,
@@ -155,28 +155,14 @@ const DraftDetail = () => {
 
   const calculateStandings = () => {
     const standings = draftPlayers.map(player => {
-      const draftMatches = matches.filter(m => 
-        m.draftId === draft.id && (m.player1 === player.id || m.player2 === player.id)
-      );
-      
-      let wins = 0;
-      let losses = 0;
-      let draws = 0;
-      
-      draftMatches.forEach(match => {
-        if (match.result === 'player1Win' && match.player1 === player.id) wins++;
-        else if (match.result === 'player2Win' && match.player2 === player.id) wins++;
-        else if (match.result === 'player1Win' && match.player2 === player.id) losses++;
-        else if (match.result === 'player2Win' && match.player1 === player.id) losses++;
-        else if (match.result === 'draw') draws++;
-      });
+      const record = getDraftRecord(player.id);
       
       return {
         ...player,
-        draftWins: wins,
-        draftLosses: losses,
-        draftDraws: draws,
-        points: (wins * 3) + draws
+        draftWins: record.wins,
+        draftLosses: record.losses,
+        draftDraws: record.draws,
+        points: (record.wins * 3) + record.draws
       };
     });
     
@@ -271,21 +257,31 @@ const DraftDetail = () => {
               <div>
                 <h3 className="font-medium mb-2">Players</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {draftPlayers.map(player => (
-                    <div key={player.id} className="border rounded-md p-2 flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-mtg-purple text-white rounded-full flex items-center justify-center">
-                        {player.name.charAt(0)}
+                  {draftPlayers.map(player => {
+                    const record = getDraftRecord(player.id);
+                    return (
+                      <div key={player.id} className="border rounded-md p-2 flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-mtg-purple text-white rounded-full flex items-center justify-center">
+                          {player.name.charAt(0)}
+                        </div>
+                        <div className="overflow-hidden">
+                          <span className="truncate block">{player.name}</span>
+                          {record.wins > 0 || record.losses > 0 || record.draws > 0 ? (
+                            <span className="text-xs text-muted-foreground">
+                              {record.wins}-{record.losses}-{record.draws}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
-                      <span className="truncate">{player.name}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {draft.status !== 'pending' && (
-            <Card>
+            <Card className="mt-4">
               <CardHeader>
                 <CardTitle>Current Leaders</CardTitle>
                 <CardDescription>Top players in this draft</CardDescription>
