@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
-import { Player } from '@/lib/types';
-import { usePlayerContext, useMatchContext } from '@/contexts/AppContext';
+import { Draft, Player } from '@/lib/types';
+import { toast } from '@/components/ui/use-toast';
+import { usePlayerContext, useDraftContext, useMatchContext } from '@/contexts/AppContext';
 import { useRoundOperations } from './draft/useRoundOperations';
 import { useDraftStandings } from './draft/useDraftStandings';
 import { useDraftLifecycle } from './draft/useDraftLifecycle';
 
 export const useDraftDetail = (draft: Draft | undefined) => {
   const { players } = usePlayerContext();
+  const { completeRound } = useDraftContext();
   const { updateMatchesResults } = useMatchContext();
   const [activeTab, setActiveTab] = useState('overview');
   

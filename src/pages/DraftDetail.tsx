@@ -27,7 +27,6 @@ const DraftDetail = () => {
     handleCompleteDraft,
     handleScoreChange,
     submitRoundResults,
-    getRoundMatches,
     calculateStandings,
     canCompleteRound,
     isMatchEditable,
@@ -53,7 +52,7 @@ const DraftDetail = () => {
     return null;
   }
 
-  const standings = calculateStandings();
+  const standings = calculateStandings(draftPlayers);
 
   return (
     <div className="container my-8 animate-fade-in">
