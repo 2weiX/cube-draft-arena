@@ -36,11 +36,11 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
   const isValidPlayerCount = selectedPlayers.length === 4 || selectedPlayers.length === 6 || selectedPlayers.length === 8;
   
   const handleCreateDraft = () => {
-    if (isValidPlayerCount && cubeName) {
+    if (isValidPlayerCount) {
       const draft = createDraft({
-        name: cubeName,
+        name: cubeName || "Unnamed Draft",
         description: `${rounds} round draft`,
-        cubeName,
+        cubeName: cubeName || undefined,
         players: selectedPlayers,
         totalRounds: rounds,
         currentRound: 0
@@ -52,7 +52,7 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
       
       toast({
         title: "Draft Created",
-        description: `${cubeName} draft has been created successfully.`
+        description: `Draft has been created successfully.`
       });
       
       if (draft && draft.id) {
@@ -100,12 +100,12 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="cube">Cube Name</Label>
+              <Label htmlFor="cube">Cube Name (Optional)</Label>
               <Input
                 id="cube"
                 value={cubeName}
                 onChange={(e) => setCubeName(e.target.value)}
-                placeholder="Enter CubeCobra cube name"
+                placeholder="Enter CubeCobra cube name (optional)"
               />
             </div>
 
@@ -132,7 +132,7 @@ export const CreateDraftDialog = ({ trigger }: CreateDraftDialogProps) => {
 
           <Button 
             className="w-full" 
-            disabled={!isValidPlayerCount || !cubeName}
+            disabled={!isValidPlayerCount}
             onClick={handleCreateDraft}
           >
             Create Draft
