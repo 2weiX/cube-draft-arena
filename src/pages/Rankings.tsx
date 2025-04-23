@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -59,7 +58,7 @@ const Rankings = () => {
       case 'losses':
         return a.losses - b.losses;
       case 'winRate':
-        return b.winRate - a.winRate;
+        return b.matchWinPercentage - a.matchWinPercentage;
       default:
         return a.ranking - b.ranking;
     }
@@ -193,7 +192,7 @@ const Rankings = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {playersWithStats.map((player, index) => (
+              {sortedPlayers.map((player, index) => (
                 <TableRow key={player.id}>
                   <TableCell className="font-medium">
                     {index === 0 ? (

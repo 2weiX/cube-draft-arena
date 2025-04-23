@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Player, Draft, Match, MatchResult, Round } from '@/lib/types';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Player, Draft, Match, MatchResult, Round, PlayerStats } from '@/lib/types';
 import { mockPlayers, mockDrafts, mockMatches, generateId } from '@/lib/mockData';
 import { toast } from '@/components/ui/use-toast';
 
@@ -31,15 +31,44 @@ interface AppContextType {
   setCurrentDraft: (draft: Draft | null) => void;
 }
 
+const STORAGE_KEYS = {
+  PLAYERS: 'cube-draft-players',
+  DRAFTS: 'cube-draft-drafts',
+  MATCHES: 'cube-draft-matches',
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [players, setPlayers] = useState<Player[]>(mockPlayers);
-  const [drafts, setDrafts] = useState<Draft[]>(mockDrafts);
-  const [matches, setMatches] = useState<Match[]>(mockMatches);
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const storedPlayers = localStorage.getItem(STORAGE_KEYS.PLAYERS);
+    return storedPlayers ? JSON.parse(storedPlayers) : mockPlayers;
+  });
+
+  const [drafts, setDrafts] = useState<Draft[]>(() => {
+    const storedDrafts = localStorage.getItem(STORAGE_KEYS.DRAFTS);
+    return storedDrafts ? JSON.parse(storedDrafts) : mockDrafts;
+  });
+
+  const [matches, setMatches] = useState<Match[]>(() => {
+    const storedMatches = localStorage.getItem(STORAGE_KEYS.MATCHES);
+    return storedMatches ? JSON.parse(storedMatches) : mockMatches;
+  });
+
   const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
 
-  // Player functions
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
+  }, [players]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
+  }, [drafts]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MATCHES, JSON.stringify(matches));
+  }, [matches]);
+
   const addPlayer = (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
     const player: Player = {
       id: generateId(),
@@ -83,7 +112,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  // Draft functions
   const createDraft = (draftData: Omit<Draft, 'id' | 'rounds' | 'status' | 'createdAt' | 'seating'>) => {
     const randomizedSeating = [...draftData.players].sort(() => Math.random() - 0.5);
     
@@ -108,11 +136,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const draftIndex = drafts.findIndex(d => d.id === id);
     if (draftIndex === -1) return null;
     
-    // Create initial pairings
     const draft = drafts[draftIndex];
     const initialPairings = createPairings(id, draft.players);
     
-    // Update draft status
     const updatedDraft = { 
       ...draft, 
       status: 'active' as const, 
@@ -155,7 +181,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updatedDraft;
   };
 
-  // Match functions
   const createMatch = (matchData: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => {
     const match: Match = {
       id: generateId(),
@@ -198,7 +223,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setMatches(updatedMatches);
     
-    // Update player stats
     if (result !== 'pending') {
       const player1 = players.find(p => p.id === match.player1);
       const player2 = players.find(p => p.id === match.player2);
@@ -215,22 +239,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updatePlayer(player2.id, { draws: player2.draws + 1 });
         }
         
-        // Update rankings
         updateRankings();
       }
     }
     
-    // Check if we need to update the draft
     const draftId = match.draftId;
     const draft = drafts.find(d => d.id === draftId);
     
     if (draft) {
       const updatedDraft = { ...draft };
       
-      // Find the round this match belongs to
       const roundIndex = updatedDraft.rounds.findIndex(r => r.number === match.round);
       if (roundIndex !== -1) {
-        // Update the match in the round
         const round = updatedDraft.rounds[roundIndex];
         const matchInRoundIndex = round.matches.findIndex(m => m.id === match.id);
         
@@ -238,7 +258,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const updatedRoundMatches = [...round.matches];
           updatedRoundMatches[matchInRoundIndex] = updatedMatch;
           
-          // Check if all matches in the round are completed
           const allMatchesCompleted = updatedRoundMatches.every(m => m.result !== 'pending');
           
           const updatedRound: Round = {
@@ -251,7 +270,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updatedRounds[roundIndex] = updatedRound;
           updatedDraft.rounds = updatedRounds;
           
-          // If round is completed and it's not the last round (3), create next round
           if (allMatchesCompleted && round.number < 3) {
             const nextRoundNumber = round.number + 1;
             const nextRoundPairings = createPairingsForNextRound(updatedDraft, nextRoundNumber);
@@ -265,14 +283,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setMatches([...updatedMatches, ...nextRoundPairings]);
           }
           
-          // Update draft in state
           const draftIndex = drafts.findIndex(d => d.id === draftId);
           if (draftIndex !== -1) {
             const updatedDrafts = [...drafts];
             updatedDrafts[draftIndex] = updatedDraft;
             setDrafts(updatedDrafts);
             
-            // If current draft is the one being updated, update currentDraft as well
             if (currentDraft && currentDraft.id === draftId) {
               setCurrentDraft(updatedDraft);
             }
@@ -289,27 +305,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updatedMatch;
   };
 
-  // Pairing functions
   const createPairings = (draftId: string, playerIds: string[]) => {
     const draft = drafts.find(d => d.id === draftId);
     if (!draft) return [];
     
-    // For first round, pair players based on seating positions (across from each other)
     const seating = draft.seating;
     const numPlayers = seating.length;
     const pairings: Match[] = [];
     
     if (numPlayers === 4) {
-      // Pair 0 with 2, 1 with 3
       pairings.push(createPairingForPlayers(draftId, seating[0], seating[2]));
       pairings.push(createPairingForPlayers(draftId, seating[1], seating[3]));
     } else if (numPlayers === 6) {
-      // Pair 0 with 3, 1 with 4, 2 with 5
       pairings.push(createPairingForPlayers(draftId, seating[0], seating[3]));
       pairings.push(createPairingForPlayers(draftId, seating[1], seating[4]));
       pairings.push(createPairingForPlayers(draftId, seating[2], seating[5]));
     } else if (numPlayers === 8) {
-      // Pair 0 with 4, 1 with 5, 2 with 6, 3 with 7
       pairings.push(createPairingForPlayers(draftId, seating[0], seating[4]));
       pairings.push(createPairingForPlayers(draftId, seating[1], seating[5]));
       pairings.push(createPairingForPlayers(draftId, seating[2], seating[6]));
@@ -334,18 +345,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const createPairingsForNextRound = (draft: Draft, roundNumber: number) => {
     if (roundNumber === 1) return [];
 
-    // Get all previous matches to check for previous pairings
     const previousMatches = draft.rounds
       .flatMap(r => r.matches)
       .map(m => ({ player1: m.player1, player2: m.player2 }));
 
-    // Calculate points for each player
     const playerPoints: Record<string, number> = {};
     draft.players.forEach(playerId => {
       playerPoints[playerId] = 0;
     });
 
-    // Calculate points from all completed rounds
     draft.rounds.forEach(round => {
       if (round.completed) {
         round.matches.forEach(match => {
@@ -361,7 +369,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Sort players by points
     const sortedPlayers = Object.entries(playerPoints)
       .sort(([, pointsA], [, pointsB]) => pointsB - pointsA)
       .map(([playerId]) => playerId);
@@ -369,17 +376,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const pairings: Match[] = [];
     const paired = new Set<string>();
 
-    // Try to pair players with similar points who haven't played each other
     for (let i = 0; i < sortedPlayers.length; i++) {
       const player1 = sortedPlayers[i];
       if (paired.has(player1)) continue;
 
-      // Find the next unpaired player who hasn't played against player1
       for (let j = i + 1; j < sortedPlayers.length; j++) {
         const player2 = sortedPlayers[j];
         if (paired.has(player2)) continue;
 
-        // Check if these players have already played against each other
         const havePlayed = previousMatches.some(
           m => (m.player1 === player1 && m.player2 === player2) ||
                (m.player1 === player2 && m.player2 === player1)
@@ -423,11 +427,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const playerScore = isPlayer1 ? match.player1Score : match.player2Score;
       const opponentScore = isPlayer1 ? match.player2Score : match.player1Score;
       
-      // Add game wins/losses
       gameWins += playerScore;
       gameLosses += opponentScore;
       
-      // Add match results
       if (match.result === 'draw') {
         matchDraws++;
       } else if (
@@ -451,7 +453,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateRankings = () => {
-    // Calculate stats for each player
     const playerStats = players.map(player => {
       const stats = calculatePlayerStats(player.id, matches);
       return {
@@ -460,7 +461,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     });
     
-    // Sort players by points, then match win %, then game win %
     playerStats.sort((a, b) => {
       if (b.points !== a.points) {
         return b.points - a.points;
@@ -471,7 +471,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return b.gameWinPercentage - a.gameWinPercentage;
     });
     
-    // Update rankings
     const updatedPlayers = playerStats.map((stats, index) => ({
       ...stats.player,
       ranking: index + 1
