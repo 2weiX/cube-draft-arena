@@ -3,25 +3,29 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/contexts/AppContext';
-import { Grid2x2, Plus } from 'lucide-react';
+import { Grid2x2, Plus, Trash2 } from 'lucide-react';
 import { Draft as DraftType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const Draft = () => {
-  const { drafts, players, createDraft } = useAppContext();
+  const { drafts, players, createDraft, deleteDraft } = useAppContext();
   const [newDraft, setNewDraft] = useState<{
     name: string;
     description: string;
@@ -230,58 +234,94 @@ const Draft = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredDrafts.map(draft => (
-            <Link key={draft.id} to={`/draft/${draft.id}`}>
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="max-w-[80%]">{draft.name}</CardTitle>
-                    {getDraftStatusBadge(draft)}
-                  </div>
-                  <CardDescription>
-                    {draft.players.length} players
-                    {draft.startedAt && ` • Started on ${new Date(draft.startedAt).toLocaleDateString()}`}
-                    {draft.cubeName && (
-                      <>
-                        <br />
-                        <a 
-                          href={getCubeCobraLink(draft.cubeName)} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline inline-flex items-center gap-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          View cube on CubeCobra
-                          <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+            <div key={draft.id} className="relative">
+              <Link to={`/draft/${draft.id}`}>
+                <Card className="hover:shadow-md transition-shadow h-full">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="max-w-[80%]">{draft.name}</CardTitle>
+                      {getDraftStatusBadge(draft)}
+                    </div>
+                    <CardDescription>
+                      {draft.players.length} players
+                      {draft.startedAt && ` • Started on ${new Date(draft.startedAt).toLocaleDateString()}`}
+                      {draft.cubeName && (
+                        <>
+                          <br />
+                          <a 
+                            href={getCubeCobraLink(draft.cubeName)} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline inline-flex items-center gap-1"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <path d="M7 7h10v10" />
-                            <path d="M7 17 17 7" />
-                          </svg>
-                        </a>
-                      </>
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {draft.description && <p className="mb-4">{draft.description}</p>}
-                  <div className="flex gap-1 flex-wrap">
-                    {draft.rounds.length > 0 ? (
-                      <Badge variant="outline" className="mr-2">
-                        Round {draft.rounds.length}/3
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="mr-2">Not started</Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                            View cube on CubeCobra
+                            <svg
+                              viewBox="0 0 24 24"
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M7 7h10v10" />
+                              <path d="M7 17 17 7" />
+                            </svg>
+                          </a>
+                        </>
+                      )}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {draft.description && <p className="mb-4">{draft.description}</p>}
+                    <div className="flex gap-1 flex-wrap">
+                      {draft.rounds.length > 0 ? (
+                        <Badge variant="outline" className="mr-2">
+                          Round {draft.rounds.length}/3
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="mr-2">Not started</Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              {draft.status === 'completed' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 z-10"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Draft</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {draft.name}? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          deleteDraft(draft.id);
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           ))}
         </div>
       )}

@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Draft, Match } from '@/lib/types';
 import { mockDrafts, generateId } from '@/lib/mockData';
 import { STORAGE_KEYS } from '@/contexts/constants';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useMatchManagement } from './useMatchManagement';
 
 export const useDraftManagement = () => {
@@ -125,6 +124,23 @@ export const useDraftManagement = () => {
     createdAt: new Date()
   });
 
+  const deleteDraft = (id: string) => {
+    const draftToDelete = drafts.find(d => d.id === id);
+    if (!draftToDelete) return;
+
+    const updatedDrafts = drafts.filter(d => d.id !== id);
+    setDrafts(updatedDrafts);
+    
+    // Remove associated matches
+    const updatedMatches = matches.filter(m => m.draftId !== id);
+    setMatches(updatedMatches);
+    
+    toast({
+      title: "Draft deleted",
+      description: `${draftToDelete.name} has been deleted.`
+    });
+  };
+
   return {
     drafts,
     currentDraft,
@@ -132,6 +148,7 @@ export const useDraftManagement = () => {
     createDraft,
     startDraft,
     completeDraft,
-    createPairings
+    createPairings,
+    deleteDraft
   };
 };
