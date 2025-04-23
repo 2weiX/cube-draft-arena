@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -124,7 +125,7 @@ const Rankings = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Win Rate</p>
-                    <p className="text-xl font-bold">{topPlayer.winRate.toFixed(1)}%</p>
+                    <p className="text-xl font-bold">{topPlayer.matchWinPercentage.toFixed(1)}%</p>
                   </div>
                 </div>
               </div>
@@ -160,7 +161,7 @@ const Rankings = () => {
           <CardContent>
             <div className="text-2xl font-bold">
               {players.length > 0 
-                ? (playersWithStats.reduce((sum, p) => sum + p.winRate, 0) / players.length).toFixed(1) + '%'
+                ? (playersWithStats.reduce((sum, p) => sum + p.matchWinPercentage, 0) / players.length).toFixed(1) + '%'
                 : '0%'
               }
             </div>
