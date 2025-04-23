@@ -1,3 +1,4 @@
+
 // Player types
 export interface Player {
   id: string;
@@ -84,5 +85,5 @@ export interface AppContextType {
   // Current draft
   currentDraft: Draft | null;
   setCurrentDraft: (draft: Draft | null) => void;
-  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => void;
+  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => Match[];
 }

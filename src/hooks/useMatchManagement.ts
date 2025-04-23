@@ -51,10 +51,17 @@ export const useMatchManagement = () => {
     
     console.log("Sanitized match results:", sanitizedResults);
     
-    const updatedMatches = matches.map(match => {
-      const result = sanitizedResults.find(r => r.id === match.id);
-      if (!result) return match;
-
+    // Create a copy of matches to work with
+    const updatedMatches = [...matches];
+    const changedMatches: Match[] = [];
+    
+    // Update each match in the copy
+    sanitizedResults.forEach(result => {
+      const index = updatedMatches.findIndex(m => m.id === result.id);
+      if (index === -1) return;
+      
+      const match = updatedMatches[index];
+      
       // Calculate the match result based on scores
       let matchResult: MatchResult = 'pending';
       if (result.player1Score > result.player2Score) {
@@ -64,26 +71,30 @@ export const useMatchManagement = () => {
       } else if (result.player1Score === result.player2Score && (result.player1Score > 0 || result.player2Score > 0)) {
         matchResult = 'draw';
       }
-
+      
       console.log(`Match ${match.id} result: ${matchResult} (${result.player1Score}-${result.player2Score}) between players ${match.player1} and ${match.player2}`);
       
-      return {
+      const updatedMatch = {
         ...match,
         player1Score: result.player1Score,
         player2Score: result.player2Score,
         result: matchResult,
         completedAt: matchResult !== 'pending' ? new Date() : undefined
       };
+      
+      // Update the match in our copy
+      updatedMatches[index] = updatedMatch;
+      changedMatches.push(updatedMatch);
     });
-
-    // Get only the matches that were updated
-    const changedMatches = updatedMatches.filter(match => 
-      sanitizedResults.some(result => result.id === match.id)
-    );
     
     console.log("Updated matches:", changedMatches);
     
-    setMatches(updatedMatches);
+    // Only update state if we actually changed something
+    if (changedMatches.length > 0) {
+      setMatches(updatedMatches);
+    } else {
+      console.warn("No matches were changed");
+    }
     
     // Return only the matches that were updated
     return changedMatches;

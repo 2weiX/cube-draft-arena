@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -90,16 +89,11 @@ const DraftDetail = () => {
 
   const handleCompleteDraft = () => {
     if (draft.id) {
-      // First, ensure the current round is completed
       const updatedDraft = completeRound(draft.id, draft.currentRound);
       
-      // Then explicitly set the draft status to completed
       if (updatedDraft) {
-        // The draft status should already be set to completed by completeRound
-        // if it was the last round, but we'll make sure it's completed
         if (updatedDraft.status !== 'completed') {
           console.log("Force completing draft:", draft.id);
-          // Call completeRound with the total rounds to ensure it's marked as completed
           completeRound(draft.id, draft.totalRounds);
         }
       }
@@ -110,7 +104,6 @@ const DraftDetail = () => {
         variant: "default"
       });
       
-      // Switch to standings view after completion
       setActiveTab('standings');
     }
   };
@@ -121,7 +114,6 @@ const DraftDetail = () => {
       
       setRoundResults({});
       
-      // Set the active tab to the next round or standings if it was the last round
       if (roundNumber < draft.totalRounds) {
         setActiveTab(`round${roundNumber + 1}`);
       } else {
@@ -139,7 +131,7 @@ const DraftDetail = () => {
     setRoundResults(prev => ({
       ...prev,
       [matchId]: {
-        ...prev[matchId],
+        ...prev[matchId] || { player1Score: 0, player2Score: 0 },
         [player]: value
       }
     }));
@@ -153,8 +145,11 @@ const DraftDetail = () => {
     }
 
     const results = round.matches.map(match => {
-      // Make sure we have results for every match
-      const scoreData = roundResults[match.id] || { player1Score: 0, player2Score: 0 };
+      const scoreData = roundResults[match.id] || { 
+        player1Score: match.player1Score || 0, 
+        player2Score: match.player2Score || 0 
+      };
+      
       return {
         id: match.id,
         player1Score: Number(scoreData.player1Score || 0),
@@ -175,14 +170,13 @@ const DraftDetail = () => {
     }
     
     try {
-      // Get the array of updated matches from updateMatchesResults
       const updatedMatches = updateMatchesResults(results);
       
       if (updatedMatches && updatedMatches.length > 0) {
         console.log("Matches updated successfully:", updatedMatches.length);
         
-        // Then complete the round, which will create the next round pairings if needed
         handleRoundCompletion(roundNumber);
+        setRoundResults({});
       } else {
         console.error("No matches were updated");
         toast({

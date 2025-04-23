@@ -29,6 +29,13 @@ export const RoundContent = ({
   onScoreChange,
   onSubmitRound
 }: RoundContentProps) => {
+  // Check if any scores have been entered
+  const hasEnteredScores = Object.values(roundResults).length > 0;
+
+  // Check if the "Submit Round Results" button should be enabled
+  // At least one match should have scores entered
+  const canSubmit = !completed && (canCompleteRound || hasEnteredScores);
+
   return (
     <Card>
       <CardHeader>
@@ -40,7 +47,7 @@ export const RoundContent = ({
             </CardDescription>
           </div>
           
-          {!completed && canCompleteRound && (
+          {canSubmit && (
             <Button 
               onClick={onSubmitRound}
               className="bg-primary hover:bg-primary/90 text-white"
@@ -87,11 +94,12 @@ export const RoundContent = ({
           })}
         </div>
         
-        {!completed && canCompleteRound && (
+        {canSubmit && (
           <div className="mt-4 flex justify-end">
             <Button 
               onClick={onSubmitRound}
               className="bg-primary hover:bg-primary/90 text-white"
+              disabled={!hasEnteredScores && !canCompleteRound}
             >
               Submit Round Results
             </Button>
