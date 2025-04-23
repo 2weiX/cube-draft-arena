@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
-import { ArrowUp, ArrowDown, Trophy } from 'lucide-react';
-import { Match, Player, Draft } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { DraftHeader } from '@/components/draft/DraftHeader';
+import { RoundContent } from '@/components/draft/RoundContent';
+import { DraftStandings } from '@/components/draft/DraftStandings';
 import { DraftSeating } from '@/components/DraftSeating';
 
 const DraftDetail = () => {
@@ -44,7 +41,7 @@ const DraftDetail = () => {
     return players.find(p => p.id === id) || { name: 'Unknown Player', id: 'unknown' };
   };
 
-  const getDraftRecord = (playerId: string): { wins: number, losses: number, draws: number } => {
+  const getDraftRecord = (playerId: string) => {
     const draftMatches = matches.filter(m => 
       m.draftId === draft.id && 
       (m.player1 === playerId || m.player2 === playerId) &&
@@ -198,49 +195,11 @@ const DraftDetail = () => {
 
   return (
     <div className="container my-8 animate-fade-in">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 text-muted-foreground mb-2">
-          <Link to="/draft" className="hover:underline">
-            Drafts
-          </Link>
-          <span>/</span>
-          <span className="truncate">{draft.name}</span>
-        </div>
-        
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">{draft.name}</h1>
-            <div className="flex items-center gap-2">
-              <Badge variant={
-                draft.status === 'pending' ? 'secondary' : 
-                draft.status === 'active' ? 'default' : 
-                'outline'
-              }>
-                {draft.status === 'pending' ? 'Pending' : 
-                 draft.status === 'active' ? 'Active' : 
-                 'Completed'}
-              </Badge>
-              <p className="text-muted-foreground">
-                {draft.players.length} players
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            {draft.status === 'pending' && (
-              <Button onClick={handleStartDraft}>Start Draft</Button>
-            )}
-            {draft.status === 'active' && (
-              <Button 
-                variant="outline" 
-                onClick={handleCompleteDraft}
-              >
-                End Draft
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      <DraftHeader 
+        draft={draft}
+        onStartDraft={handleStartDraft}
+        onCompleteDraft={handleCompleteDraft}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
@@ -254,7 +213,7 @@ const DraftDetail = () => {
           <TabsTrigger value="standings">Standings</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="overview">
           <Card>
             <CardHeader>
               <CardTitle>Draft Details</CardTitle>
@@ -344,187 +303,24 @@ const DraftDetail = () => {
         </TabsContent>
 
         {draft.rounds.map((round) => (
-          <TabsContent key={round.number} value={`round${round.number}`} className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Round {round.number} Pairings</CardTitle>
-                    <CardDescription>
-                      {round.completed ? 'Completed' : 'In Progress'}
-                    </CardDescription>
-                  </div>
-                  
-                  {!round.completed && canCompleteRound(round.number) && (
-                    <Button 
-                      onClick={() => submitRoundResults(round.number)}
-                      className="bg-primary hover:bg-primary/90 text-white"
-                    >
-                      Submit Round Results
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {round.matches.map(match => {
-                    const player1 = getPlayerById(match.player1);
-                    const player2 = getPlayerById(match.player2);
-                    const player1Record = getDraftRecord(match.player1);
-                    const player2Record = getDraftRecord(match.player2);
-                    
-                    const matchFromState = matches.find(m => m.id === match.id);
-                    const matchResult = matchFromState?.result || 'pending';
-                    const isEditable = isMatchEditable(match.id);
-                    
-                    const currentScores = roundResults[match.id] || { 
-                      player1Score: matchFromState?.player1Score || 0, 
-                      player2Score: matchFromState?.player2Score || 0
-                    };
-                    
-                    return (
-                      <Card key={match.id} className="border shadow-sm">
-                        <CardContent className="pt-6">
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="text-center">
-                              <div className="mb-1">
-                                <p className="font-medium">{player1.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {player1Record.wins}-{player1Record.losses}-{player1Record.draws}
-                                </p>
-                              </div>
-                              {isEditable ? (
-                                <div className="flex gap-2 justify-center mt-2">
-                                  {[2, 1, 0].map((score) => (
-                                    <Button
-                                      key={score}
-                                      variant={currentScores.player1Score === score ? "default" : "outline"}
-                                      size="sm"
-                                      onClick={() => handleScoreChange(match.id, 'player1Score', score)}
-                                    >
-                                      {score}
-                                    </Button>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-2xl font-bold mt-2">{matchFromState?.player1Score || 0}</p>
-                              )}
-                            </div>
-                            
-                            <div className="flex flex-col items-center justify-center">
-                              {matchResult === 'pending' ? (
-                                <p className="text-muted-foreground">vs</p>
-                              ) : matchResult === 'player1Win' ? (
-                                <div className="flex items-center">
-                                  <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
-                                  <p className="text-green-500 font-medium">Winner</p>
-                                  <ArrowDown className="h-4 w-4 text-red-500 ml-4 mr-1" />
-                                </div>
-                              ) : matchResult === 'player2Win' ? (
-                                <div className="flex items-center">
-                                  <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
-                                  <ArrowUp className="h-4 w-4 text-green-500 ml-4 mr-1" />
-                                  <p className="text-green-500 font-medium">Winner</p>
-                                </div>
-                              ) : (
-                                <div className="py-1 px-3 bg-gray-100 rounded text-sm">
-                                  Draw
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="text-center">
-                              <div className="mb-1">
-                                <p className="font-medium">{player2.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {player2Record.wins}-{player2Record.losses}-{player2Record.draws}
-                                </p>
-                              </div>
-                              {isEditable ? (
-                                <div className="flex gap-2 justify-center mt-2">
-                                  {[2, 1, 0].map((score) => (
-                                    <Button
-                                      key={score}
-                                      variant={currentScores.player2Score === score ? "default" : "outline"}
-                                      size="sm"
-                                      onClick={() => handleScoreChange(match.id, 'player2Score', score)}
-                                    >
-                                      {score}
-                                    </Button>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-2xl font-bold mt-2">{matchFromState?.player2Score || 0}</p>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-                
-                {!round.completed && canCompleteRound(round.number) && (
-                  <div className="mt-4 flex justify-end">
-                    <Button 
-                      onClick={() => submitRoundResults(round.number)}
-                      className="bg-primary hover:bg-primary/90 text-white"
-                    >
-                      Submit Round Results
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent key={round.number} value={`round${round.number}`}>
+            <RoundContent
+              roundNumber={round.number}
+              matches={round.matches}
+              completed={round.completed}
+              getPlayerById={getPlayerById}
+              getDraftRecord={getDraftRecord}
+              roundResults={roundResults}
+              isMatchEditable={isMatchEditable}
+              canCompleteRound={canCompleteRound(round.number)}
+              onScoreChange={handleScoreChange}
+              onSubmitRound={() => submitRoundResults(round.number)}
+            />
           </TabsContent>
         ))}
 
-        <TabsContent value="standings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Draft Standings</CardTitle>
-              <CardDescription>
-                Player rankings for this draft
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-4 font-medium">Rank</th>
-                      <th className="text-left py-2 px-4 font-medium">Player</th>
-                      <th className="text-center py-2 px-4 font-medium">Wins</th>
-                      <th className="text-center py-2 px-4 font-medium">Losses</th>
-                      <th className="text-center py-2 px-4 font-medium">Draws</th>
-                      <th className="text-center py-2 px-4 font-medium">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {standings.map((player, index) => (
-                      <tr key={player.id} className={index === 0 ? 'bg-accent/30' : ''}>
-                        <td className="py-2 px-4">
-                          {index === 0 ? (
-                            <div className="flex items-center">
-                              <Trophy className="h-4 w-4 text-yellow-500 mr-1" />
-                              <span>{index + 1}</span>
-                            </div>
-                          ) : (
-                            index + 1
-                          )}
-                        </td>
-                        <td className="py-2 px-4 font-medium">{player.name}</td>
-                        <td className="text-center py-2 px-4">{player.draftWins}</td>
-                        <td className="text-center py-2 px-4">{player.draftLosses}</td>
-                        <td className="text-center py-2 px-4">{player.draftDraws}</td>
-                        <td className="text-center py-2 px-4 font-bold">{player.points}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="standings">
+          <DraftStandings standings={standings} />
         </TabsContent>
       </Tabs>
     </div>
