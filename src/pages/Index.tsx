@@ -2,18 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppContext } from "@/contexts/AppContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, Grid2x2, Trophy, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const { drafts, players } = useAppContext();
+  const navigate = useNavigate();
+  const { drafts, players, createDraft } = useAppContext();
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [cubeName, setCubeName] = useState("");
   const [rounds, setRounds] = useState<3 | 4>(3);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const currentDraft = drafts.find(draft => draft.status === 'active');
   
   const togglePlayer = (playerId: string) => {
@@ -30,6 +33,32 @@ const Index = () => {
 
   const isValidPlayerCount = selectedPlayers.length === 4 || selectedPlayers.length === 6 || selectedPlayers.length === 8;
   
+  const handleCreateDraft = () => {
+    if (isValidPlayerCount && cubeName) {
+      const draft = createDraft({
+        name: cubeName,
+        description: `${rounds} round draft`,
+        cubeName,
+        players: selectedPlayers,
+        totalRounds: rounds
+      });
+      
+      setSelectedPlayers([]);
+      setCubeName("");
+      setDialogOpen(false);
+      
+      toast({
+        title: "Draft Created",
+        description: `${cubeName} draft has been created successfully.`
+      });
+      
+      // Navigate to the new draft
+      if (draft && draft.id) {
+        navigate(`/draft/${draft.id}`);
+      }
+    }
+  };
+
   return (
     <div className="container my-8 animate-fade-in">
       <div className="text-center mb-16">
@@ -117,7 +146,7 @@ const Index = () => {
         ) : (
           <div className="text-center space-y-4">
             <h2 className="text-2xl font-bold">No Active Draft</h2>
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="lg" className="gap-2">
                   <Plus className="h-4 w-4" />
@@ -166,12 +195,14 @@ const Index = () => {
                         <Button
                           variant={rounds === 3 ? "default" : "outline"}
                           onClick={() => setRounds(3)}
+                          type="button"
                         >
                           3 Rounds
                         </Button>
                         <Button
                           variant={rounds === 4 ? "default" : "outline"}
                           onClick={() => setRounds(4)}
+                          type="button"
                         >
                           4 Rounds
                         </Button>
@@ -179,14 +210,13 @@ const Index = () => {
                     </div>
                   </div>
 
-                  <Link to="/draft" className="w-full block">
-                    <Button 
-                      className="w-full" 
-                      disabled={!isValidPlayerCount || !cubeName}
-                    >
-                      Create Draft
-                    </Button>
-                  </Link>
+                  <Button 
+                    className="w-full" 
+                    disabled={!isValidPlayerCount || !cubeName}
+                    onClick={handleCreateDraft}
+                  >
+                    Create Draft
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
