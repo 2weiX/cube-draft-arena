@@ -14,7 +14,7 @@ const Index = () => {
     <div className="container my-8 animate-fade-in">
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-mtg-purple to-mtg-darkblue">
-          Cube Draft Arena
+          A Cube Draft
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Organize and track your Magic: The Gathering cube drafts with easy pairing, 
@@ -143,3 +143,4 @@ const Index = () => {
 };
 
 export default Index;
+

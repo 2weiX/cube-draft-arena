@@ -13,7 +13,7 @@ const Navbar = () => {
           <div className="rounded-md bg-gradient-to-r from-mtg-purple to-mtg-darkblue p-2">
             <Trophy className="h-6 w-6 text-white" />
           </div>
-          <span className="font-bold text-lg">Cube Draft Arena</span>
+          <span className="font-bold text-lg">A Cube Draft</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link to="/players">
@@ -39,3 +39,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
