@@ -25,9 +25,6 @@ const Navbar = () => {
           <Link to="/draft">
             <Button variant="ghost" size="sm">Draft</Button>
           </Link>
-          <Link to="/matches">
-            <Button variant="ghost" size="sm">Matches</Button>
-          </Link>
           <Link to="/rankings">
             <Button variant="ghost" size="sm">Rankings</Button>
           </Link>
@@ -39,4 +36,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
