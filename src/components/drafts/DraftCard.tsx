@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,7 +99,7 @@ export const DraftCard = ({ draft, onDelete }: DraftCardProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 z-10"
+              className="absolute top-2 right-2 z-10 hover:bg-destructive/10"
               onClick={(e) => e.preventDefault()}
             >
               <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
@@ -110,7 +109,7 @@ export const DraftCard = ({ draft, onDelete }: DraftCardProps) => {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Draft</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete {draft.name}? This action cannot be undone.
+                Are you sure you want to delete {draft.name}? This will remove the draft history but preserve player records. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -122,7 +121,7 @@ export const DraftCard = ({ draft, onDelete }: DraftCardProps) => {
                 }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                Delete
+                Delete Draft
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

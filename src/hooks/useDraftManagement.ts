@@ -165,6 +165,16 @@ export const useDraftManagement = () => {
     const draftToDelete = drafts.find(d => d.id === id);
     if (!draftToDelete) return;
 
+    // Only allow deletion of completed drafts
+    if (draftToDelete.status !== 'completed') {
+      toast({
+        title: "Cannot delete draft",
+        description: "Only completed drafts can be deleted.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const updatedDrafts = drafts.filter(d => d.id !== id);
     setDrafts(updatedDrafts);
     
@@ -174,7 +184,7 @@ export const useDraftManagement = () => {
     
     toast({
       title: "Draft deleted",
-      description: `${draftToDelete.name} has been deleted.`
+      description: `${draftToDelete.name} has been deleted. Player records have been preserved.`
     });
   };
 
