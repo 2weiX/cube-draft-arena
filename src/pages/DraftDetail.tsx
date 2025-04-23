@@ -80,8 +80,8 @@ const DraftDetail = () => {
       completeRound(draft.id, finalRound);
       
       toast({
-        title: "Round Completed",
-        description: "The current round has been completed.",
+        title: "Draft Ended",
+        description: "The draft has been marked as completed.",
         variant: "default"
       });
     }
@@ -162,13 +162,9 @@ const DraftDetail = () => {
   };
 
   const isRoundComplete = (roundNumber: number): boolean => {
-    // This checks if all matches in a round have non-pending results in the actual matches array
     const round = draft.rounds.find(r => r.number === roundNumber);
     if (!round) return false;
     
-    // Check if all matches have either:
-    // 1. A non-pending result in the matches array
-    // 2. Scores set in the roundResults state
     return round.matches.every(match => {
       const matchInState = matches.find(m => m.id === match.id);
       const hasResultInState = matchInState && matchInState.result !== 'pending';
@@ -228,7 +224,7 @@ const DraftDetail = () => {
                 variant="outline" 
                 onClick={handleCompleteDraft}
               >
-                Complete Round
+                End Draft
               </Button>
             )}
           </div>
@@ -348,7 +344,6 @@ const DraftDetail = () => {
                     </CardDescription>
                   </div>
                   
-                  {/* Explicitly show/hide the "Submit Round Results" button based on conditions */}
                   {!round.completed && canCompleteRound(round.number) && (
                     <Button 
                       onClick={() => submitRoundResults(round.number)}
@@ -455,7 +450,6 @@ const DraftDetail = () => {
                   })}
                 </div>
                 
-                {/* Add an extra submit button at the bottom for better UX */}
                 {!round.completed && canCompleteRound(round.number) && (
                   <div className="mt-4 flex justify-end">
                     <Button 
