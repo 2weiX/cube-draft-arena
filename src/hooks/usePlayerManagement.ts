@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Player } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { dbToPlayerModel, playerToDbModel } from '@/lib/adapters';
 
 export const usePlayerManagement = () => {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -27,13 +28,15 @@ export const usePlayerManagement = () => {
       return;
     }
 
-    setPlayers(data);
+    // Convert database objects to application models
+    const playerModels = data.map(dbToPlayerModel);
+    setPlayers(playerModels);
   };
 
   const addPlayer = async (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
     const { data, error } = await supabase
       .from('players')
-      .insert([newPlayer])
+      .insert([playerToDbModel(newPlayer)])
       .select()
       .single();
 
@@ -46,18 +49,26 @@ export const usePlayerManagement = () => {
       return null;
     }
 
-    setPlayers(prev => [...prev, data]);
+    const playerModel = dbToPlayerModel(data);
+    setPlayers(prev => [...prev, playerModel]);
+    
     toast({
       title: "Player added",
       description: `${data.name} has been added to the player pool.`
     });
-    return data;
+    
+    return playerModel;
   };
 
   const updatePlayer = async (id: string, updates: Partial<Player>) => {
+    // Convert any camelCase properties to snake_case
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name = updates.name;
+    if (updates.avatar) dbUpdates.avatar = updates.avatar;
+    
     const { data, error } = await supabase
       .from('players')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -71,8 +82,10 @@ export const usePlayerManagement = () => {
       return null;
     }
 
-    setPlayers(prev => prev.map(p => p.id === id ? data : p));
-    return data;
+    const playerModel = dbToPlayerModel(data);
+    setPlayers(prev => prev.map(p => p.id === id ? playerModel : p));
+    
+    return playerModel;
   };
 
   const deletePlayer = async (id: string) => {
@@ -91,10 +104,12 @@ export const usePlayerManagement = () => {
     }
 
     setPlayers(prev => prev.filter(p => p.id !== id));
+    
     toast({
       title: "Player removed",
       description: "The player has been removed from the player pool."
     });
+    
     return true;
   };
 

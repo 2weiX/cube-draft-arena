@@ -5,8 +5,8 @@ import { Match } from '@/lib/types';
 
 interface MatchContextType {
   matches: Match[];
-  createMatch: (match: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => Match;
-  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => Match[];
+  createMatch: (match: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => Promise<Match | null>;
+  updateMatchesResults: (matchResults: { id: string; player1Score: number; player2Score: number; }[]) => Promise<Match[]>;
 }
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);

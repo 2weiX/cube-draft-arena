@@ -5,9 +5,9 @@ import { Player } from '@/lib/types';
 
 interface PlayerContextType {
   players: Player[];
-  addPlayer: (player: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => Player;
-  updatePlayer: (id: string, updates: Partial<Player>) => Player | null;
-  deletePlayer: (id: string) => boolean;
+  addPlayer: (player: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => Promise<Player | null>;
+  updatePlayer: (id: string, updates: Partial<Player>) => Promise<Player | null>;
+  deletePlayer: (id: string) => Promise<boolean>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);

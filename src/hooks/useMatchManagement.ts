@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Match } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { dbToMatchModel, matchToDbModel } from '@/lib/adapters';
 
 export const useMatchManagement = () => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -23,16 +24,17 @@ export const useMatchManagement = () => {
       return;
     }
 
-    setMatches(data);
+    // Convert database objects to application models
+    const matchModels = data.map(dbToMatchModel);
+    setMatches(matchModels);
   };
 
   const createMatch = async (matchData: Omit<Match, 'id' | 'result' | 'createdAt' | 'completedAt'>) => {
+    const dbMatch = matchToDbModel(matchData);
+    
     const { data, error } = await supabase
       .from('matches')
-      .insert([{
-        ...matchData,
-        result: 'pending'
-      }])
+      .insert([dbMatch])
       .select()
       .single();
 
@@ -45,8 +47,10 @@ export const useMatchManagement = () => {
       return null;
     }
 
-    setMatches(prev => [data, ...prev]);
-    return data;
+    const matchModel = dbToMatchModel(data);
+    setMatches(prev => [matchModel, ...prev]);
+    
+    return matchModel;
   };
 
   const updateMatchesResults = async (matchResults: { 
@@ -79,7 +83,7 @@ export const useMatchManagement = () => {
         continue;
       }
 
-      updatedMatches.push(data);
+      updatedMatches.push(dbToMatchModel(data));
     }
 
     if (updatedMatches.length > 0) {
