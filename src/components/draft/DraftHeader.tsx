@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Draft } from '@/lib/types';
 import { toast } from '@/components/ui/use-toast';
-import { RefreshCw } from 'lucide-react';
 
 interface DraftHeaderProps {
   draft: Draft;
@@ -48,11 +47,7 @@ export const DraftHeader = ({ draft, onStartDraft, onCompleteDraft }: DraftHeade
         
         <div className="flex gap-2">
           {draft.status === 'pending' && (
-            <Button 
-              onClick={handleStartDraftClick} 
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
+            <Button onClick={handleStartDraftClick}>
               Start Draft
             </Button>
           )}

@@ -10,19 +10,42 @@ export const useDraftLifecycle = (draft: Draft | undefined) => {
 
   const handleStartDraft = () => {
     if (draft?.id) {
-      const updatedDraft = contextStartDraft(draft.id);
-      
-      if (updatedDraft) {
+      try {
+        console.log("Starting draft:", draft.id);
+        const updatedDraft = contextStartDraft(draft.id);
+        
+        if (updatedDraft) {
+          console.log("Draft started successfully:", updatedDraft);
+          
+          toast({
+            title: "Draft started",
+            description: "The pairings have been created for round 1."
+          });
+          
+          // Force a reload of the current page to ensure the UI updates
+          setTimeout(() => {
+            navigate(0);
+          }, 100);
+          
+          return 'round1';
+        } else {
+          console.error("Failed to start draft - no updated draft returned");
+          toast({
+            title: "Error",
+            description: "Failed to start the draft. Please try again.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("Error starting draft:", error);
         toast({
-          title: "Draft started",
-          description: "The pairings have been created for round 1."
+          title: "Error",
+          description: "An unexpected error occurred when starting the draft.",
+          variant: "destructive"
         });
-        
-        // Force a reload of the current page to ensure the UI updates
-        navigate(0);
-        
-        return 'round1';
       }
+    } else {
+      console.error("Cannot start draft - no draft ID available");
     }
     return 'overview';
   };
