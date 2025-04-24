@@ -118,6 +118,7 @@ export const usePlayerManagement = () => {
     setPlayers,
     addPlayer,
     updatePlayer,
-    deletePlayer
+    deletePlayer,
+    fetchPlayers
   };
 };

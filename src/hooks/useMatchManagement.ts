@@ -21,6 +21,11 @@ export const useMatchManagement = () => {
 
     if (error) {
       console.error("Error fetching matches:", error);
+      toast({
+        title: "Error fetching matches",
+        description: error.message,
+        variant: "destructive"
+      });
       return;
     }
 
@@ -80,6 +85,11 @@ export const useMatchManagement = () => {
 
       if (error) {
         console.error(`Error updating match ${result.id}:`, error);
+        toast({
+          title: "Error updating match",
+          description: error.message,
+          variant: "destructive"
+        });
         continue;
       }
 
@@ -87,12 +97,14 @@ export const useMatchManagement = () => {
     }
 
     if (updatedMatches.length > 0) {
-      setMatches(prev => 
-        prev.map(match => {
-          const updated = updatedMatches.find(u => u.id === match.id);
-          return updated || match;
-        })
-      );
+      // Fetch all matches again to ensure we have the latest data
+      await fetchMatches();
+      
+      // Notify about success
+      toast({
+        title: "Matches updated",
+        description: `${updatedMatches.length} match results saved successfully.`
+      });
     }
 
     return updatedMatches;
@@ -102,6 +114,7 @@ export const useMatchManagement = () => {
     matches,
     setMatches,
     createMatch,
-    updateMatchesResults
+    updateMatchesResults,
+    fetchMatches
   };
 };
