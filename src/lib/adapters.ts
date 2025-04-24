@@ -46,5 +46,5 @@ export const matchToDbModel = (match: Omit<Match, 'id' | 'result' | 'createdAt' 
   player1_score: match.player1Score,
   player2_score: match.player2Score,
   result: 'pending',
-  round_id: match.roundId || '00000000-0000-0000-0000-000000000000' // Default UUID if not provided
+  round_id: '00000000-0000-0000-0000-000000000000' // Default UUID
 });

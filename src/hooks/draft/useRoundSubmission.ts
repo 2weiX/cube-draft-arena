@@ -9,7 +9,7 @@ export const useRoundSubmission = (draft: Draft | undefined) => {
   const { updateMatchesResults } = useMatchContext();
   const [activeTab, setActiveTab] = useState('overview');
 
-  const submitRoundResults = (roundNumber: number) => {
+  const submitRoundResults = async (roundNumber: number) => {
     const round = draft?.rounds.find(r => r.number === roundNumber);
     if (!round) return;
 
@@ -29,9 +29,9 @@ export const useRoundSubmission = (draft: Draft | undefined) => {
     }
     
     try {
-      const updatedMatches = updateMatchesResults(results);
+      const updatedMatches = await updateMatchesResults(results);
       
-      if (updatedMatches?.length > 0) {
+      if (updatedMatches && updatedMatches.length > 0) {
         handleRoundCompletion(roundNumber);
       } else {
         toast({
