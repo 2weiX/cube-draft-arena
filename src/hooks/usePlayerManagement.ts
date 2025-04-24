@@ -1,70 +1,96 @@
 
 import { useState, useEffect } from 'react';
 import { Player } from '@/lib/types';
-import { mockPlayers, generateId } from '@/lib/mockData';
-import { STORAGE_KEYS } from '@/contexts/constants';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export const usePlayerManagement = () => {
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const storedPlayers = localStorage.getItem(STORAGE_KEYS.PLAYERS);
-    return storedPlayers ? JSON.parse(storedPlayers) : mockPlayers;
-  });
+  const [players, setPlayers] = useState<Player[]>([]);
 
+  // Fetch players on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
-  }, [players]);
+    fetchPlayers();
+  }, []);
 
-  const addPlayer = (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
-    // Check if player name already exists (case insensitive)
-    const playerExists = players.some(
-      p => p.name.toLowerCase() === newPlayer.name.toLowerCase()
-    );
+  const fetchPlayers = async () => {
+    const { data, error } = await supabase
+      .from('players')
+      .select('*')
+      .order('ranking', { ascending: true });
 
-    if (playerExists) {
+    if (error) {
       toast({
-        title: "Error",
-        description: "A player with this name already exists.",
+        title: "Error fetching players",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPlayers(data);
+  };
+
+  const addPlayer = async (newPlayer: Omit<Player, 'id' | 'wins' | 'losses' | 'draws' | 'ranking' | 'createdAt'>) => {
+    const { data, error } = await supabase
+      .from('players')
+      .insert([newPlayer])
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error adding player",
+        description: error.message,
         variant: "destructive"
       });
       return null;
     }
 
-    const player: Player = {
-      id: generateId(),
-      ...newPlayer,
-      wins: 0,
-      losses: 0,
-      draws: 0,
-      ranking: players.length + 1,
-      createdAt: new Date()
-    };
-    
-    setPlayers([...players, player]);
+    setPlayers(prev => [...prev, data]);
     toast({
       title: "Player added",
-      description: `${player.name} has been added to the player pool.`
+      description: `${data.name} has been added to the player pool.`
     });
-    return player;
+    return data;
   };
 
-  const updatePlayer = (id: string, updates: Partial<Player>) => {
-    const index = players.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    
-    const updatedPlayer = { ...players[index], ...updates };
-    const updatedPlayers = [...players];
-    updatedPlayers[index] = updatedPlayer;
-    
-    setPlayers(updatedPlayers);
-    return updatedPlayer;
+  const updatePlayer = async (id: string, updates: Partial<Player>) => {
+    const { data, error } = await supabase
+      .from('players')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error updating player",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    setPlayers(prev => prev.map(p => p.id === id ? data : p));
+    return data;
   };
 
-  const deletePlayer = (id: string) => {
-    const playerExists = players.some(p => p.id === id);
-    if (!playerExists) return false;
-    
-    setPlayers(players.filter(p => p.id !== id));
+  const deletePlayer = async (id: string) => {
+    const { error } = await supabase
+      .from('players')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error deleting player",
+        description: error.message,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    setPlayers(prev => prev.filter(p => p.id !== id));
     toast({
       title: "Player removed",
       description: "The player has been removed from the player pool."

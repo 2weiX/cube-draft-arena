@@ -9,6 +9,244 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      drafts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          cube_name: string | null
+          current_round: number
+          description: string | null
+          id: string
+          name: string
+          players: string[]
+          seating: string[]
+          started_at: string | null
+          status: string
+          total_rounds: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          cube_name?: string | null
+          current_round?: number
+          description?: string | null
+          id?: string
+          name: string
+          players: string[]
+          seating: string[]
+          started_at?: string | null
+          status: string
+          total_rounds: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          cube_name?: string | null
+          current_round?: number
+          description?: string | null
+          id?: string
+          name?: string
+          players?: string[]
+          seating?: string[]
+          started_at?: string | null
+          status?: string
+          total_rounds?: number
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          draft_id: string
+          id: string
+          player1: string
+          player1_score: number
+          player2: string
+          player2_score: number
+          result: string
+          round: number
+          round_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          draft_id: string
+          id?: string
+          player1: string
+          player1_score?: number
+          player2: string
+          player2_score?: number
+          result: string
+          round: number
+          round_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          draft_id?: string
+          id?: string
+          player1?: string
+          player1_score?: number
+          player2?: string
+          player2_score?: number
+          result?: string
+          round?: number
+          round_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_player1_fkey"
+            columns: ["player1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_player2_fkey"
+            columns: ["player2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_draft_stats: {
+        Row: {
+          created_at: string
+          draft_id: string
+          draws: number
+          game_win_percentage: number
+          id: string
+          losses: number
+          match_win_percentage: number
+          player_id: string
+          points: number
+          updated_at: string
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          draft_id: string
+          draws?: number
+          game_win_percentage?: number
+          id?: string
+          losses?: number
+          match_win_percentage?: number
+          player_id: string
+          points?: number
+          updated_at?: string
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          draft_id?: string
+          draws?: number
+          game_win_percentage?: number
+          id?: string
+          losses?: number
+          match_win_percentage?: number
+          player_id?: string
+          points?: number
+          updated_at?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_draft_stats_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_draft_stats_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          draws: number
+          id: string
+          losses: number
+          name: string
+          ranking: number
+          wins: number
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          draws?: number
+          id?: string
+          losses?: number
+          name: string
+          ranking?: number
+          wins?: number
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          draws?: number
+          id?: string
+          losses?: number
+          name?: string
+          ranking?: number
+          wins?: number
+        }
+        Relationships: []
+      }
+      rounds: {
+        Row: {
+          completed: boolean
+          created_at: string
+          draft_id: string
+          id: string
+          number: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          draft_id: string
+          id?: string
+          number: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          draft_id?: string
+          id?: string
+          number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rounds_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "drafts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracked_tweets: {
         Row: {
           author_id: string
@@ -128,7 +366,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_rankings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
